@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="fr"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0B6B3A">
+<title>LIVREUR 24/24</title>
+<style>
+:root{--g:#0B6B3A;--d:#062F1B;--o:#F38218;--bg:#F5F7F6;--line:#E3E8E5;--m:#5D6A62;--t:#14201A}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{background:var(--bg);color:var(--t);font-family:system-ui,-apple-system,Roboto,Arial,sans-serif}
+button,input,textarea{font-family:inherit;color:inherit}button{cursor:pointer}
+.app{max-width:430px;margin:0 auto;min-height:100vh;padding-bottom:90px}
+.demo{background:#FFF4E5;color:#8A4B00;font-size:12px;text-align:center;padding:7px}
+.hd{background:linear-gradient(155deg,var(--d),var(--g));color:#fff;padding:20px 18px;border-radius:0 0 26px 26px}
+.br{font-size:24px;font-weight:800;user-select:none}.br b{color:var(--o)}
+.sb{font-size:12.5px;opacity:.9;margin-top:3px}
+.st{margin-top:12px;display:inline-block;background:rgba(255,255,255,.16);border-radius:99px;padding:7px 13px;font-size:12.5px;font-weight:700}
+.h2{padding:16px 18px 8px;font-weight:800;font-size:17px;display:flex;justify-content:space-between;align-items:center}
+.h2 span{background:#E8ECEA;border-radius:99px;font-size:12px;padding:3px 10px;color:var(--m)}
+.card{background:#fff;border:1px solid var(--line);border-radius:18px;margin:0 16px 12px;padding:14px}
+.top{display:flex;justify-content:space-between;align-items:center;font-size:12px;color:var(--m)}
+.badge{font-weight:800;font-size:11px;border-radius:99px;padding:4px 10px;background:#E5F3EA;color:var(--g)}.badge.p{background:#EEE;color:#777}
+.route{font-size:18px;font-weight:800;margin:10px 0 4px}.route i{color:var(--o);font-style:normal}
+.row{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:8px}
+.px{font-size:20px;font-weight:800;color:var(--g)}
+.call{background:var(--g);color:#fff;border:0;border-radius:14px;padding:13px 18px;font-weight:800;font-size:15px;text-decoration:none;display:inline-block}
+.ear{background:#E5F3EA;border:0;border-radius:14px;padding:13px 14px;font-size:16px}
+.card.pris{opacity:.55}.card.pris .call,.card.pris .ear{pointer-events:none;background:#999;color:#fff}
+.rep{font-size:11.5px;color:var(--m);text-decoration:underline;margin-top:8px;display:inline-block;background:none;border:0}
+.box{background:#fff;border:1px solid var(--line);border-radius:18px;margin:14px 16px 0;padding:16px}
+.box h3{font-size:16px;margin-bottom:6px}.box p,.box li,.box label{font-size:13px;color:var(--m);line-height:1.5}
+.box.warn{background:#FFF4E5;border-color:#F3C48A}.box.warn p{color:#8A4B00}
+.box.ann{background:#E5F3EA;border-color:#BFE0CB}.box.ann p{color:var(--g);font-weight:700}
+input,textarea{width:100%;border:1px solid var(--line);background:var(--bg);border-radius:12px;padding:13px;font-size:15px;margin-top:10px;outline:none}
+.wide{display:block;width:100%;border:0;border-radius:14px;padding:15px;font-weight:800;font-size:15px;margin-top:12px;color:#fff;background:var(--g)}
+.wave{background:#1E88FF}.om{background:#FF7900}.org{background:var(--o);color:#14201A}.gh{background:#EEF1EF;color:var(--t)}
+.stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin:14px 16px 0}
+.stats div{background:#fff;border:1px solid var(--line);border-radius:14px;padding:12px 6px;text-align:center;font-size:11.5px;color:var(--m)}
+.stats b{display:block;font-size:18px;color:var(--g)}
+.mini{border:0;border-radius:99px;padding:8px 13px;font-weight:700;font-size:12px;background:#EEF1EF}.mini.ok{background:var(--g);color:#fff}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.chip{border:1px solid var(--line);background:#fff;border-radius:99px;padding:9px 14px;font-size:13px;font-weight:600}
+.chip.on{background:var(--g);color:#fff;border-color:var(--g)}
+.sw{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.sw button{border:0;border-radius:99px;padding:9px 16px;font-weight:800;font-size:12.5px;background:#DDD}.sw button.on{background:var(--g);color:#fff}
+.toast{position:fixed;top:10px;left:50%;transform:translate(-50%,-140%);width:calc(100% - 24px);max-width:406px;background:#14201A;color:#fff;border-radius:16px;padding:14px 16px;font-size:14px;font-weight:700;z-index:20;transition:transform .35s ease;box-shadow:0 8px 24px rgba(0,0,0,.3)}
+.toast.show{transform:translate(-50%,0)}
+.nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;background:#fff;border:1px solid var(--line);border-bottom:0;border-radius:22px 22px 0 0;box-shadow:0 -4px 18px rgba(0,0,0,.08);display:flex;padding-bottom:env(safe-area-inset-bottom,0)}
+.nav button{flex:1;border:0;background:none;padding:12px 0;font-size:12px;font-weight:700;color:var(--m);display:flex;flex-direction:column;align-items:center;gap:4px}
+.nav button.on{color:var(--g)}
+.nav svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.scr{display:none}.scr.on{display:block;animation:up .3s ease}
+@keyframes up{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+</style></head><body>
+<div class="toast" id="toast"></div>
+<div class="app"><div id="main"></div><div class="nav" id="nav" style="display:none"></div></div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script>
+var URL_="https://uaayndkcayllfpytxgmh.supabase.co",KEY="sb_publishable_eE1vmX2jjmHy22iE4ISVPg_oGBuic2t";
+var sb=supabase.createClient(URL_,KEY);
+var $=function(i){return document.getElementById(i)};
+var me=null,prof=null,R={prix:500,jours:7,lien_wave:"",lien_om:"",annonce:""},O=[],MS=[],PAY=[],ST={ins:0,act:0},tab="offres",REG=false,VOX=true,FZ="mes",OPEN=null,ch=null,PI="";
+var COMM=["Cocody","Yopougon","Abobo","Marcory","Koumassi","Plateau","Adjamé","Bingerville","Port-Bouët","Treichville","Attécoubé","Anyama"];
+function esc(s){return String(s==null?"":s).replace(/[&<>"']/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]})}
+function f(n){return String(n).replace(/\B(?=(\d{3})+(?!\d))/g,"\u202F")+" FCFA"}
+function ago(t){var m=Math.max(0,Math.round((Date.now()-new Date(t))/6e4));return m<1?"à l’instant":m<60?"il y a "+m+" min":m<1440?"il y a "+Math.round(m/60)+" h":"il y a "+Math.round(m/1440)+" j"}
+function days(){return prof&&prof.abonnement_fin?Math.max(0,Math.ceil((new Date(prof.abonnement_fin)-Date.now())/864e5)):0}
+function isAdmin(){return !!prof&&prof.role==="admin"}
+function toast(t){var e=$("toast");e.textContent=t;e.classList.add("show");setTimeout(function(){e.classList.remove("show")},3500)}
+function speak(t){try{speechSynthesis.cancel();var u=new SpeechSynthesisUtterance(t);u.lang="fr-FR";speechSynthesis.speak(u)}catch(e){}}
+function dite(o){return "Nouvelle offre. "+o.depart+" vers "+o.arrivee+". "+o.prix+" francs."}
+function emailOf(s){s=s.trim();return s.indexOf("@")>-1?s.toLowerCase():s.replace(/\D/g,"")+"@livreur.sysap.ci"}
+function bad(r){if(r&&r.error){alert("Erreur : "+r.error.message);return true}return false}
+function hd(a,b,x){return '<div class="hd"><div class="br">'+a+'</div><div class="sb">'+b+'</div>'+(x||"")+'</div>'}
+function vis(o){var z=(prof&&prof.zones)||[];return FZ==="toutes"||!z.length||z.indexOf(o.depart)>-1||z.indexOf(o.arrivee)>-1}
+
+async function auth(){
+  var id=$("lid").value.trim(),pw=$("lpw").value,r;
+  if(!id||pw.length<6){$("lm").textContent="Numéro et mot de passe (6 caractères minimum) obligatoires.";return}
+  if(REG){var nom=$("lnom").value.trim();if(!nom){$("lm").textContent="Écris ton nom.";return}
+    r=await sb.auth.signUp({email:emailOf(id),password:pw,options:{data:{nom:nom,telephone:id.replace(/\D/g,"")}}})}
+  else r=await sb.auth.signInWithPassword({email:emailOf(id),password:pw});
+  if(r.error){$("lm").textContent=(REG?"Inscription impossible : ":"Connexion impossible : ")+r.error.message;return}
+  await start();
+}
+async function start(){
+  var s=(await sb.auth.getSession()).data.session;
+  if(!s){me=null;prof=null;render();return}
+  me=s.user;await loadProfile();
+  var r=await sb.from("reglages").select("*").eq("id",1).single();if(r.data)R=r.data;
+  await Promise.all([loadOffres(),loadMsgs(),isAdmin()?loadAdmin():0]);
+  subscribe();render();
+}
+async function loadProfile(){var p=await sb.from("profiles").select("*").eq("id",me.id).single();if(p.data)prof=p.data}
+async function loadOffres(){var r=await sb.from("offres").select("*").order("cree_le",{ascending:false}).limit(50);O=r.data||[]}
+async function loadMsgs(){
+  if(isAdmin()){var a=await sb.from("messages").select("*,profiles(nom,telephone)").order("cree_le");MS=a.data||[]}
+  else{var b=await sb.from("messages").select("*").eq("livreur_id",me.id).order("cree_le");MS=b.data||[]}
+}
+async function loadAdmin(){
+  var a=await sb.from("paiements").select("id,moyen,cree_le,profiles(nom,telephone)").eq("statut","en_attente").order("cree_le");PAY=a.data||[];
+  var b=await sb.from("profiles").select("*",{count:"exact",head:true}).eq("role","livreur");
+  var c=await sb.from("profiles").select("*",{count:"exact",head:true}).gt("abonnement_fin",new Date().toISOString());
+  ST={ins:b.count||0,act:c.count||0};
+}
+function subscribe(){
+  if(ch)sb.removeChannel(ch);
+  ch=sb.channel("live")
+   .on("postgres_changes",{event:"*",schema:"public",table:"offres"},async function(p){
+     await loadOffres();
+     if(p.eventType==="INSERT"&&!isAdmin()&&vis(p.new)){toast("🔔 Nouvelle offre : "+p.new.depart+" → "+p.new.arrivee+" · "+f(p.new.prix));if(VOX)speak(dite(p.new))}
+     render()})
+   .on("postgres_changes",{event:"INSERT",schema:"public",table:"messages"},async function(){await loadMsgs();render()})
+   .on("postgres_changes",{event:"INSERT",schema:"public",table:"paiements"},async function(){if(isAdmin()){await loadAdmin();render()}})
+   .subscribe();
+}
+function render(){
+  var keep={},af=document.activeElement&&document.activeElement.id;
+  document.querySelectorAll("input,textarea").forEach(function(e){if(e.id)keep[e.id]=e.value});
+  var v=!me?authView():tab==="abo"?aboView():tab==="aide"?aideView():tab==="profil"?profilView():(tab==="admin"&&isAdmin())?adminView():offresView();
+  $("main").innerHTML=v;
+  for(var k in keep){if($(k))$(k).value=keep[k]}
+  if(af&&$(af))try{$(af).focus()}catch(e){}
+  var T=[["offres","Offres","M3 7l9-4 9 4-9 4zM3 7v10l9 4 9-4V7M12 11v10"],["abo","Abonnement","M3 9h18M5 6h14a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2z"],["aide","Aide","M4 5h16v11H9l-5 4z"],["profil","Profil","M12 4a4 4 0 1 0 0 8 4 4 0 0 0 0-8zM4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"]];
+  if(isAdmin())T.push(["admin","Admin","M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"]);
+  var n=$("nav");n.style.display=me?"flex":"none";
+  n.innerHTML=T.map(function(t){return '<button class="'+(t[0]===tab?"on":"")+'" onclick="go(\''+t[0]+'\')"><svg viewBox="0 0 24 24"><path d="'+t[2]+'"/></svg>'+t[1]+'</button>'}).join("");
+}
+async function go(t){tab=t;if(me){await loadProfile();if(t==="admin"){await loadAdmin();await loadMsgs()}if(t==="aide")await loadMsgs()}render();window.scrollTo(0,0)}
+function authView(){return hd('LIVREUR <b>24/24</b>',"Les offres de colis, jour et nuit")+'<div class="box"><h3>'+(REG?"Créer mon compte":"Connexion")+'</h3>'+(REG?'<input id="lnom" placeholder="Ton nom">':'')+'<input id="lid" placeholder="'+(REG?"Ton numéro de téléphone":"Numéro de téléphone (ou email)")+'"><input id="lpw" type="password" placeholder="Mot de passe (6 caractères minimum)"><div id="lm" style="color:#B91C1C;font-size:13px;margin-top:8px"></div><button class="wide" onclick="auth()">'+(REG?"Créer mon compte":"Me connecter")+'</button><button class="wide gh" onclick="REG=!REG;render()">'+(REG?"J’ai déjà un compte":"Je n’ai pas de compte")+'</button></div>'}
+function offresView(){
+  var d=days(),h=hd('LIVREUR <b>24/24</b>',"Les offres de colis, en direct",'<div class="st">'+(d>0?"✓ Abonnement actif · "+d+" jour"+(d>1?"s":"")+" restant"+(d>1?"s":""):"Abonnement inactif")+'</div>');
+  if(R.annonce)h+='<div class="box ann"><p>📢 '+esc(R.annonce)+'</p></div>';
+  if(!isAdmin()&&d<=0)return h+'<div class="box warn"><p>Pour voir les offres, active ton abonnement ('+f(R.prix)+' pour '+R.jours+' jours).</p><button class="wide org" onclick="go(\'abo\')">Je m’abonne</button></div>';
+  if(!isAdmin()&&d<=2)h+='<div class="box warn"><p>⚠ Il te reste '+d+' jour'+(d>1?"s":"")+'. Renouvelle dans l’onglet Abonnement.</p></div>';
+  var L=O.filter(vis),c=L.filter(function(o){return o.statut!=="pris"}).length;
+  h+='<div class="box" style="padding:12px"><div class="sw"><span style="font-size:13px;font-weight:700">🔊 Lecture vocale des offres</span><button class="'+(VOX?"on":"")+'" onclick="VOX=!VOX;if(VOX)speak(\'Voix activée\');render()">'+(VOX?"Activée":"Coupée")+'</button></div></div>';
+  h+='<div class="h2">Offres du moment <span>'+c+'</span></div><div class="chips" style="padding:0 16px 10px;margin:0"><button class="chip'+(FZ==="mes"?" on":"")+'" onclick="FZ=\'mes\';render()">Mes zones</button><button class="chip'+(FZ==="toutes"?" on":"")+'" onclick="FZ=\'toutes\';render()">Toutes</button></div>';
+  return h+(L.map(function(o){var p=o.statut==="pris";return '<div class="card'+(p?" pris":"")+'"><div class="top"><span>'+ago(o.cree_le)+'</span><span class="badge'+(p?" p":"")+'">'+(p?"Pris":"Disponible")+'</span></div><div class="route">'+esc(o.depart)+' <i>→</i> '+esc(o.arrivee)+'</div><div class="row"><div class="px">'+f(o.prix)+'</div><div><button class="ear" onclick="speak(\''+esc(dite(o)).replace(/'/g,"")+'\')">🔊</button> '+(o.telephone_client?'<a class="call" href="tel:'+esc(o.telephone_client)+'">📞 Appeler</a>':'')+'</div></div>'+(isAdmin()?'':'<button class="rep" onclick="signaler('+o.id+')">Signaler cette offre</button>')+'</div>'}).join("")||'<div class="box"><p>Aucune offre pour l’instant.</p></div>');
+}
+function aboView(){
+  var d=days();
+  return hd('LIVREUR <b>24/24</b>',"Abonnement",'<div class="st">'+(d>0?d+" jour"+(d>1?"s":"")+" restant"+(d>1?"s":""):"Abonnement inactif")+'</div>')+
+  '<div class="box"><h3>Paye '+f(R.prix)+' pour '+R.jours+' jours</h3><p>Choisis ton moyen de paiement. Paie avec le numéro de ton profil, c’est plus rapide à valider.</p><button class="wide wave" onclick="pay(\'Wave\')">Payer avec Wave</button><button class="wide om" onclick="pay(\'Orange Money\')">Payer avec Orange Money</button></div>'+
+  (PI?'<div class="box ann"><p>✅ '+esc(PI)+'</p></div>':'')+
+  '<div class="box"><h3>Comment ça marche</h3><ul style="padding-left:18px"><li>Tu paies comme sur une boutique.</li><li>La validation de ton abonnement peut prendre de <b>5 minutes à 1 heure</b>.</li><li>Dès que c’est validé, tu reçois les offres. Un souci ? Onglet Aide.</li></ul></div>';
+}
+function bub(a,mine){return a.map(function(m){var me_=m.auteur===mine;return '<div style="display:flex;justify-content:'+(me_?"flex-end":"flex-start")+'"><div style="max-width:82%;margin:4px 0;padding:10px 13px;border-radius:16px;font-size:14px;'+(me_?"background:var(--g);color:#fff":"background:#EEF1EF")+'">'+esc(m.texte)+'</div></div>'}).join("")}
+function aideView(){return hd('Aide et <b>discussion</b>',"Écris à l’équipe, on te répond ici")+'<div class="box"><div style="min-height:120px">'+(bub(MS,"livreur")||'<p>Aucun message. Écris-nous !</p>')+'</div><input id="msg" placeholder="Écris ton message…"><button class="wide" onclick="sendL()">Envoyer</button></div>'}
+function profilView(){
+  var z=(prof&&prof.zones)||[];
+  return hd('Mon <b>profil</b>',esc(prof?prof.nom:""))+'<div class="box"><h3>Mes informations</h3><input id="pn" placeholder="Nom" value="'+esc(prof&&prof.nom)+'"><input id="pt" placeholder="Téléphone" value="'+esc(prof&&prof.telephone)+'"><button class="wide" onclick="saveProf()">Enregistrer</button></div>'+
+  '<div class="box"><h3>Mes zones de livraison</h3><p>Tu ne reçois que les offres de ces communes. Aucune zone choisie = toutes les offres.</p><div class="chips">'+COMM.map(function(c){return '<button class="chip'+(z.indexOf(c)>-1?" on":"")+'" onclick="tz(\''+c+'\')">'+c+'</button>'}).join("")+'</div></div>'+
+  '<div class="box"><h3>Voix</h3><button class="wide gh" onclick="speak(\'Test de la voix. Cocody vers Bingerville, mille cinq cents francs.\')">🔊 Tester la voix</button></div>'+
+  '<div style="padding:0 16px"><button class="wide gh" onclick="sb.auth.signOut().then(function(){tab=\'offres\';start()})">Se déconnecter</button></div>';
+}
+function convs(){var g={};MS.forEach(function(m){(g[m.livreur_id]=g[m.livreur_id]||[]).push(m)});
+  return Object.keys(g).map(function(k){var a=g[k],n=0;for(var i=a.length-1;i>=0&&a[i].auteur==="livreur";i--)n++;return {id:k,nom:(a[0].profiles&&a[0].profiles.nom)||"Livreur",a:a,n:n,t:a[a.length-1].cree_le}}).sort(function(x,y){return new Date(y.t)-new Date(x.t)})}
+function adminView(){
+  var h=hd('Espace <b>Admin</b>',"Réservé au propriétaire")+'<div class="stats"><div><b>'+ST.ins+'</b>inscrits</div><div><b>'+ST.act+'</b>abonnés actifs</div><div><b>'+String(ST.act*R.prix).replace(/\B(?=(\d{3})+(?!\d))/g,"\u202F")+'</b>FCFA / période</div></div>';
+  h+='<div class="h2">Paiements à valider <span>'+PAY.length+'</span></div>'+(PAY.map(function(x){var p=x.profiles||{};return '<div class="card"><div class="top"><span>Paiement '+esc(x.moyen)+' lancé · '+ago(x.cree_le)+'</span><span>'+esc(p.telephone)+'</span></div><div class="route" style="font-size:16px">'+esc(p.nom)+' · '+f(R.prix)+'</div><div class="row"><button class="mini ok" onclick="valider('+x.id+')">Valider (+'+R.jours+' jours)</button><button class="mini" style="color:#B91C1C" onclick="refuser('+x.id+')">Refuser</button></div></div>'}).join("")||'<div class="box"><p>Aucun paiement en attente.</p></div>');
+  var C=convs(),cv=C.filter(function(c){return c.id===OPEN})[0];
+  h+='<div class="h2">Messages <span>'+C.reduce(function(s,c){return s+c.n},0)+'</span></div>'+C.map(function(c){return '<div class="card" onclick="OPEN=\''+c.id+'\';render()" style="cursor:pointer"><div class="top"><b style="color:var(--t);font-size:14px">'+esc(c.nom)+'</b>'+(c.n?'<span class="badge" style="background:#FFE4E6;color:#E11D48">'+c.n+' nouveau'+(c.n>1?"x":"")+'</span>':'')+'</div><p style="font-size:13px;color:var(--m);margin-top:6px">'+esc(c.a[c.a.length-1].texte)+'</p></div>'}).join("");
+  if(cv)h+='<div class="box"><h3>'+esc(cv.nom)+'</h3>'+bub(cv.a,"admin")+'<input id="rep" placeholder="Ta réponse…"><button class="wide org" onclick="sendA()">Répondre</button><button class="wide gh" onclick="OPEN=null;render()">Fermer</button></div>';
+  h+='<div class="box"><h3>Publier une offre</h3><input id="a1" placeholder="Départ (ex : Cocody)"><input id="a2" placeholder="Arrivée (ex : Bingerville)"><input id="a3" type="number" inputmode="numeric" placeholder="Prix (ex : 1500)"><input id="a4" type="tel" placeholder="Numéro du client"><button class="wide org" onclick="publier()">Publier à tous les livreurs</button></div>';
+  h+='<div class="h2">Offres publiées</div>'+O.map(function(o){var p=o.statut==="pris";return '<div class="card"><div class="top"><span>'+ago(o.cree_le)+'</span><span class="badge'+(p?" p":"")+'">'+(p?"Pris":"Disponible")+'</span></div><div class="route" style="font-size:16px">'+esc(o.depart)+' <i>→</i> '+esc(o.arrivee)+' · '+f(o.prix)+'</div><div class="row"><button class="mini" onclick="bascule('+o.id+',\''+(p?"disponible":"pris")+'\')">'+(p?"Remettre disponible":"Marquer pris")+'</button><button class="mini" style="color:#B91C1C" onclick="suppr('+o.id+')">Supprimer</button></div></div>'}).join("");
+  h+='<div class="box"><h3>Réglages de l’appli</h3><label>Prix de l’abonnement (FCFA)</label><input id="r1" type="number" value="'+R.prix+'"><label>Durée (jours)</label><input id="r2" type="number" value="'+R.jours+'"><label>Lien de paiement Wave</label><input id="r3" value="'+esc(R.lien_wave)+'"><label>Lien de paiement Orange Money</label><input id="r4" value="'+esc(R.lien_om)+'"><label>Annonce affichée aux livreurs</label><input id="r6" value="'+esc(R.annonce)+'"><button class="wide" onclick="sauver()">Enregistrer les réglages</button></div>';
+  return h;
+}
+async function pay(m){
+  var l=m==="Wave"?R.lien_wave:R.lien_om;
+  if(!l){alert("Le paiement "+m+" n’est pas encore configuré.");return}
+  var r=await sb.from("paiements").insert({livreur_id:me.id,moyen:m});if(bad(r))return;
+  PI="Paiement "+m+" lancé. La validation de ton abonnement peut prendre de 5 minutes à 1 heure.";render();
+  window.open(l,"_blank")||(location.href=l);
+}
+async function sendL(){var v=$("msg").value.trim();if(!v)return;var r=await sb.from("messages").insert({livreur_id:me.id,auteur:"livreur",texte:v});if(bad(r))return;$("msg").value="";await loadMsgs();render()}
+async function sendA(){var v=$("rep").value.trim();if(!v||!OPEN)return;var r=await sb.from("messages").insert({livreur_id:OPEN,auteur:"admin",texte:v});if(bad(r))return;$("rep").value="";await loadMsgs();render()}
+async function saveProf(){var r=await sb.from("profiles").update({nom:$("pn").value.trim(),telephone:$("pt").value.trim()}).eq("id",me.id);if(bad(r))return;await loadProfile();render();toast("Profil enregistré")}
+async function tz(c){var z=((prof&&prof.zones)||[]).slice(),i=z.indexOf(c);i>-1?z.splice(i,1):z.push(c);var r=await sb.from("profiles").update({zones:z}).eq("id",me.id);if(bad(r))return;prof.zones=z;render()}
+async function signaler(id){var r=await sb.from("signalements").insert({offre_id:id,livreur_id:me.id});if(r.error&&r.error.code!=="23505"){bad(r);return}alert("Merci. L’offre est signalée à l’administrateur.")}
+async function publier(){
+  var g=function(i){return $(i).value.trim()},p=parseInt(g("a3"),10);
+  if(!g("a1")||!g("a2")||!p){alert("Remplis le départ, l’arrivée et le prix.");return}
+  var r=await sb.from("offres").insert({depart:g("a1"),arrivee:g("a2"),prix:p,telephone_client:g("a4")});if(bad(r))return;
+  ["a1","a2","a3","a4"].forEach(function(i){$(i).value=""});toast("Offre publiée");await loadOffres();render();
+}
+async function bascule(id,s){var r=await sb.from("offres").update({statut:s}).eq("id",id);if(bad(r))return;await loadOffres();render()}
+async function suppr(id){if(!confirm("Supprimer cette offre ?"))return;var r=await sb.from("offres").delete().eq("id",id);if(bad(r))return;await loadOffres();render()}
+async function valider(id){var r=await sb.rpc("valider_paiement",{p_id:id});if(bad(r))return;await loadAdmin();render();toast("Accès activé")}
+async function refuser(id){var r=await sb.from("paiements").update({statut:"refuse"}).eq("id",id);if(bad(r))return;await loadAdmin();render()}
+async function sauver(){
+  var g=function(i){return $(i).value.trim()},p=parseInt(g("r1"),10),j=parseInt(g("r2"),10);
+  if(!p||!j){alert("Prix et durée obligatoires.");return}
+  var r=await sb.from("reglages").update({prix:p,jours:j,lien_wave:g("r3"),lien_om:g("r4"),annonce:g("r6")}).eq("id",1);if(bad(r))return;
+  var x=await sb.from("reglages").select("*").eq("id",1).single();if(x.data)R=x.data;render();toast("Réglages enregistrés");
+}
+sb.auth.onAuthStateChange(function(e){if(e==="SIGNED_OUT"){me=null;prof=null;render()}});
+start();
+</script></body></html>
