@@ -56,6 +56,7 @@ input,textarea{width:100%;border:1px solid var(--line);background:var(--bg);bord
 .scr{display:none}.scr.on{display:block;animation:up .3s ease}
 @keyframes up{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
 .lg{width:52px;height:52px;border-radius:14px;flex-shrink:0}.badge.v{background:#FFF4E5;color:#8A4B00}.warn-s{margin-top:10px;font-size:12px;line-height:1.45;color:#8A4B00;background:#FFF4E5;border-radius:10px;padding:8px 10px}
+.hd{position:relative;overflow:hidden}.hd::after{content:"";position:absolute;right:-30px;bottom:-40px;width:200px;height:200px;background:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20512%20512%22%3E%3Ccircle%20cx%3D%22256%22%20cy%3D%22256%22%20r%3D%22170%22%20fill%3D%22none%22%20stroke%3D%22%23fff%22%20stroke-width%3D%2230%22%20stroke-linecap%3D%22round%22%20stroke-dasharray%3D%22880%20188%22%20transform%3D%22rotate%28-70%20256%20256%29%22%2F%3E%3Ctext%20x%3D%22256%22%20y%3D%22308%22%20text-anchor%3D%22middle%22%20font-family%3D%22Arial%20Black%2CArial%2Csans-serif%22%20font-weight%3D%22900%22%20font-size%3D%22170%22%20fill%3D%22%23fff%22%3E24%3C%2Ftext%3E%3C%2Fsvg%3E") no-repeat center/contain;opacity:.09;pointer-events:none}.hd>*{position:relative;z-index:1}
 </style></head><body>
 <div class="toast" id="toast"></div>
 <div class="app"><div id="main"></div><div class="nav" id="nav" style="display:none"></div></div>
@@ -66,12 +67,13 @@ var sb=supabase.createClient(URL_,KEY);
 var DEF_LOGO="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20512%20512%22%3E%3Cdefs%3E%3ClinearGradient%20id%3D%22g%22%20x1%3D%220%22%20y1%3D%220%22%20x2%3D%221%22%20y2%3D%221%22%3E%3Cstop%20offset%3D%220%22%20stop-color%3D%22%230F8A4B%22%2F%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22%23062F1B%22%2F%3E%3C%2FlinearGradient%3E%3C%2Fdefs%3E%3Crect%20width%3D%22512%22%20height%3D%22512%22%20rx%3D%22112%22%20fill%3D%22url%28%23g%29%22%2F%3E%3Ccircle%20cx%3D%22256%22%20cy%3D%22256%22%20r%3D%22170%22%20fill%3D%22none%22%20stroke%3D%22%23F38218%22%20stroke-width%3D%2230%22%20stroke-linecap%3D%22round%22%20stroke-dasharray%3D%22880%20188%22%20transform%3D%22rotate%28-70%20256%20256%29%22%2F%3E%3Ctext%20x%3D%22256%22%20y%3D%22308%22%20text-anchor%3D%22middle%22%20font-family%3D%22Arial%20Black%2CArial%2CHelvetica%2Csans-serif%22%20font-weight%3D%22900%22%20font-size%3D%22170%22%20fill%3D%22%23fff%22%3E24%3C%2Ftext%3E%3C%2Fsvg%3E";
 var AVERT="IMPORTANT : Avant de vous déplacer, veuillez appeler directement le contact indiqué pour vérifier si le colis est toujours disponible. Les offres peuvent être récupérées rapidement. Premier arrivé, premier servi.",AVERT_C="⚠ Appelle avant de te déplacer. Premier arrivé, premier servi.";
 var NL="",DIP=null;
+function normTel(x){var d=String(x).replace(/\D/g,"");if(d.length===13&&d.indexOf("225")===0)d=d.slice(3);return d}
 function LOGO(){return (typeof R!=="undefined"&&R.logo)||DEF_LOGO}
 function actif(o){return Date.now()-new Date(o.cree_le)<5*36e5}
 function nouv(o){return Date.now()-new Date(o.cree_le)<18e5}
 window.addEventListener("beforeinstallprompt",function(e){e.preventDefault();DIP=e;if(me)render()});
 var $=function(i){return document.getElementById(i)};
-var me=null,prof=null,R={prix:500,jours:7,lien_wave:"",lien_om:"",annonce:"",logo:""},O=[],MS=[],PAY=[],ST={ins:0,act:0},tab="offres",REG=false,ADM=false,TP=0,TT=0,VOX=true,FZ="mes",OPEN=null,ch=null,PI="";
+var me=null,prof=null,R={prix:500,jours:7,lien_wave:"",lien_om:"",annonce:"",logo:"",fond:"",couleur:"vert"},O=[],MS=[],PAY=[],ST={ins:0,act:0},tab="offres",REG=true,ADM=false,FG=false,NF=null,RS=[],TP=0,TT=0,VOX=true,FZ="mes",OPEN=null,ch=null,PI="";
 var COMM=["Cocody","Yopougon","Abobo","Marcory","Koumassi","Plateau","Adjamé","Bingerville","Port-Bouët","Treichville","Attécoubé","Anyama"];
 function esc(s){return String(s==null?"":s).replace(/[&<>"']/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]})}
 function f(n){return String(n).replace(/\B(?=(\d{3})+(?!\d))/g,"\u202F")+" FCFA"}
@@ -83,18 +85,38 @@ function speak(t){try{speechSynthesis.cancel();var u=new SpeechSynthesisUtteranc
 function dite(o){return "Nouvelle offre. "+o.depart+" vers "+o.arrivee+". "+o.prix+" francs."}
 function emailOf(s){s=s.trim();return s.indexOf("@")>-1?s.toLowerCase():s.replace(/\D/g,"")+"@livreur.sysap.ci"}
 function bad(r){if(r&&r.error){alert("Erreur : "+r.error.message);return true}return false}
-function hd(a,b,x){return '<div class="hd"><div style="display:flex;align-items:center;gap:12px"><img class="lg" alt="" src="'+LOGO()+'"><div><div class="br" onclick="tap()">'+a+'</div><div class="sb">'+b+'</div></div></div>'+(x||"")+'</div>'}
+function hd(a,b,x){return '<div class="hd"'+(R.fond?' style="background:linear-gradient(155deg,rgba(6,47,27,.82),rgba(11,107,58,.74)),url('+R.fond+') center/cover"':'')+'><div style="display:flex;align-items:center;gap:12px"><img class="lg" alt="" src="'+LOGO()+'"><div><div class="br" onclick="tap()">'+a+'</div><div class="sb">'+b+'</div></div></div>'+(x||"")+'</div>'}
 function tap(){TP++;clearTimeout(TT);TT=setTimeout(function(){TP=0},1500);if(TP>=5){TP=0;if(!me){ADM=true;render()}else if(isAdmin())go("admin")}}
 function vis(o){var z=(prof&&prof.zones)||[];return FZ==="toutes"||!z.length||z.indexOf(o.depart)>-1||z.indexOf(o.arrivee)>-1}
 
+function forgotView(){return hd('Mot de passe <b>oublié</b>',"On te donne un nouveau mot de passe")+'<div class="box"><h3>Demande de nouveau mot de passe</h3><p>Écris le numéro de ton compte. L’administrateur te contacte et te donne un mot de passe temporaire.</p><input id="ft" type="tel" inputmode="numeric" placeholder="Ton numéro de téléphone"><input id="fn" placeholder="Ton nom (facultatif)"><div id="fm" style="color:#B91C1C;font-size:13px;margin-top:8px"></div><button class="wide" onclick="sendForgot()">Envoyer ma demande</button><button class="wide gh" onclick="FG=false;render()">Retour</button></div>'}
+async function sendForgot(){var t=normTel($("ft").value);if(t.length<8){$("fm").textContent="Écris un numéro valide.";return}var r=await sb.from("demandes_reset").insert({telephone:t,nom:$("fn").value.trim()});if(r.error){$("fm").textContent="Erreur : "+r.error.message;return}FG=false;render();alert("Demande envoyée. L’administrateur va te contacter avec un nouveau mot de passe.")}
+async function chgPwd(){var v=$("np").value;if(v.length<6){alert("6 caractères minimum.");return}var r=await sb.auth.updateUser({password:v});if(bad(r))return;$("np").value="";toast("Mot de passe changé")}
+async function resetPwd(b){
+  var tel=b.dataset.t,nom=b.dataset.n||"livreur",a=new Uint32Array(1);crypto.getRandomValues(a);var pwd=String(100000+a[0]%900000);
+  var r=await sb.rpc("reinitialiser_mot_de_passe",{p_tel:tel,p_pwd:pwd});if(bad(r))return;
+  await loadAdmin();render();
+  var msg="Bonjour "+nom+", ton nouveau mot de passe LIVREUR 24/24 est : "+pwd+". Connecte-toi, puis change-le dans Profil.";
+  if(confirm("Mot de passe temporaire : "+pwd+"\n\nL’envoyer par WhatsApp à "+tel+" ?"))window.open("https://wa.me/225"+tel+"?text="+encodeURIComponent(msg),"_blank");
+}
+async function ignorerReset(id){var r=await sb.from("demandes_reset").update({traite:true}).eq("id",id);if(bad(r))return;await loadAdmin();render()}
+function fondPick(i){var f=i.files[0];if(!f)return;var fr=new FileReader();fr.onload=function(){var im=new Image();im.onload=function(){var c=document.createElement("canvas"),k=Math.min(1,900/im.width);c.width=Math.round(im.width*k);c.height=Math.round(Math.min(im.height*k,500));var x=c.getContext("2d");x.drawImage(im,0,0,im.width,c.height/k,0,0,c.width,c.height);NF=c.toDataURL("image/jpeg",.6);toast("Image prête : enregistre les réglages")};im.src=fr.result};fr.readAsDataURL(f)}
+var THEMES={vert:["#0B6B3A","#062F1B"],bleu:["#1D4ED8","#0B1F5C"],violet:["#7C3AED","#2E1065"],rouge:["#B91C1C","#450A0A"],noir:["#1F2937","#0B1220"]},PB=[],NP="";
+function applyTheme(){var t=THEMES[R.couleur]||THEMES.vert,st=document.documentElement.style;st.setProperty("--g",t[0]);st.setProperty("--d",t[1])}
+async function loadPubs(){var r=await sb.from("pubs").select("*").order("cree_le",{ascending:false}).limit(10);PB=r.data||[]}
+function pubsHtml(){if(!PB.length)return"";return '<div class="ch" style="padding:12px 16px 0">'+PB.map(function(p){var i='<img src="'+p.image+'" alt="" style="width:260px;height:130px;object-fit:cover;border-radius:16px;display:block">'+(p.titre?'<div style="font-size:12px;font-weight:700;margin:4px 2px;max-width:260px">'+esc(p.titre)+'</div>':'');return /^https?:\/\//i.test(p.lien||"")?'<a href="'+esc(p.lien)+'" target="_blank" rel="noopener" style="flex:0 0 auto;text-decoration:none;color:var(--t)">'+i+'</a>':'<div style="flex:0 0 auto">'+i+'</div>'}).join("")+'</div>'}
+function pubPick(i){var f=i.files[0];if(!f)return;var fr=new FileReader();fr.onload=function(){var im=new Image();im.onload=function(){var c=document.createElement("canvas"),k=Math.min(1,800/im.width);c.width=Math.round(im.width*k);c.height=Math.round(im.height*k);c.getContext("2d").drawImage(im,0,0,c.width,c.height);var q=.6;NP=c.toDataURL("image/jpeg",q);while(NP.length>280000&&q>.25){q-=.1;NP=c.toDataURL("image/jpeg",q)}toast("Image prête : ajoute la publicité")};im.src=fr.result};fr.readAsDataURL(f)}
+async function addPub(){if(!NP){alert("Choisis d’abord une image.");return}var l=$("publ").value.trim();if(l&&!/^https?:\/\//i.test(l)){alert("Le lien doit commencer par https://");return}var r=await sb.from("pubs").insert({titre:$("pubt").value.trim(),lien:l,image:NP});if(bad(r))return;NP="";await loadPubs();render();toast("Publicité ajoutée")}
+async function delPub(id){if(!confirm("Retirer cette publicité ?"))return;var r=await sb.from("pubs").delete().eq("id",id);if(bad(r))return;await loadPubs();render()}
 async function auth(){
   var id=$("lid").value.trim(),pw=$("lpw").value,r,m=$("lm"),email;
   if(!id||pw.length<6){m.textContent=ADM?"Email et mot de passe obligatoires.":"Numéro et mot de passe (6 caractères minimum) obligatoires.";return}
-  if(ADM)email=id.toLowerCase();else{var d=id.replace(/\D/g,"");if(d.length<8){m.textContent="Écris un numéro de téléphone valide.";return}email=d+"@livreur.sysap.ci"}
+  if(ADM)email=id.toLowerCase();else{var d=normTel(id);if(d.length<8){m.textContent="Écris un numéro de téléphone valide.";return}email=d+"@livreur.sysap.ci"}
   if(REG&&!ADM){var nom=$("lnom").value.trim();if(!nom){m.textContent="Écris ton nom.";return}
     r=await sb.auth.signUp({email:email,password:pw,options:{data:{nom:nom,telephone:email.split("@")[0]}}})}
   else r=await sb.auth.signInWithPassword({email:email,password:pw});
   if(r.error){m.textContent=(REG&&!ADM?"Inscription impossible : ":"Connexion impossible : ")+r.error.message;return}
+  if(ADM){try{sessionStorage.setItem("adm","1")}catch(e){}}
   await start();
   if(ADM){if(isAdmin()){ADM=false;tab="admin";await loadAdmin();await loadMsgs();render()}else{await sb.auth.signOut();me=null;prof=null;ADM=false;render();alert("Ce compte n’a pas accès à l’espace Admin.")}}
 }
@@ -102,8 +124,11 @@ async function start(){
   var s=(await sb.auth.getSession()).data.session;
   if(!s){me=null;prof=null;render();return}
   me=s.user;await loadProfile();
+  var af=false;try{af=!!sessionStorage.getItem("adm")}catch(e){}
+  if(isAdmin()&&!af){await sb.auth.signOut();me=null;prof=null;tab="offres";render();return}
   var r=await sb.from("reglages").select("*").eq("id",1).single();if(r.data)R=r.data;
-  await Promise.all([loadOffres(),loadMsgs(),isAdmin()?loadAdmin():0]);
+  await Promise.all([loadOffres(),loadMsgs(),loadPubs(),isAdmin()?loadAdmin():0]);
+  applyTheme();if(!isAdmin()&&days()<=0)tab="abo";
   subscribe();render();
 }
 async function loadProfile(){var p=await sb.from("profiles").select("*").eq("id",me.id).single();if(p.data)prof=p.data}
@@ -117,6 +142,7 @@ async function loadAdmin(){
   var b=await sb.from("profiles").select("*",{count:"exact",head:true}).eq("role","livreur");
   var c=await sb.from("profiles").select("*",{count:"exact",head:true}).gt("abonnement_fin",new Date().toISOString());
   ST={ins:b.count||0,act:c.count||0};
+  var d=await sb.from("demandes_reset").select("*").eq("traite",false).order("cree_le");RS=d.data||[];
 }
 function subscribe(){
   if(ch)sb.removeChannel(ch);
@@ -127,10 +153,12 @@ function subscribe(){
      if(p.eventType==="INSERT"&&!isAdmin()&&vis(p.new)){toast("🔔 Nouvelle offre : "+p.new.depart+" → "+p.new.arrivee+" · "+f(p.new.prix));if(VOX)speak(dite(p.new))}
      render()})
    .on("postgres_changes",{event:"INSERT",schema:"public",table:"messages"},async function(){await loadMsgs();render()})
+   .on("postgres_changes",{event:"INSERT",schema:"public",table:"demandes_reset"},async function(){if(isAdmin()){await loadAdmin();toast("🔑 Demande de mot de passe");render()}})
    .on("postgres_changes",{event:"INSERT",schema:"public",table:"paiements"},async function(){if(isAdmin()){await loadAdmin();render()}})
    .subscribe();
 }
 function render(){
+  applyTheme();
   var keep={},af=document.activeElement&&document.activeElement.id;
   document.querySelectorAll("input,textarea").forEach(function(e){if(e.id)keep[e.id]=e.value});
   var v=!me?authView():tab==="abo"?aboView():tab==="aide"?aideView():tab==="profil"?profilView():(tab==="admin"&&isAdmin())?adminView():offresView();
@@ -143,11 +171,13 @@ function render(){
 }
 async function go(t){tab=t;if(me){await loadProfile();if(t==="admin"){await loadAdmin();await loadMsgs()}if(t==="aide")await loadMsgs()}render();window.scrollTo(0,0)}
 function authView(){
+  if(FG)return forgotView();
   var t=ADM?"Espace Admin":REG?"Créer mon compte":"Connexion";
-  return hd(ADM?'Espace <b>Admin</b>':'LIVREUR <b>24/24</b>',ADM?"Réservé au propriétaire":"Les offres de colis, jour et nuit")+'<div class="box"><h3>'+t+'</h3>'+(REG&&!ADM?'<input id="lnom" placeholder="Ton nom">':'')+'<input id="lid" '+(ADM?'type="email" placeholder="Email administrateur"':'type="tel" inputmode="numeric" placeholder="Ton numéro de téléphone"')+'><input id="lpw" type="password" placeholder="Mot de passe'+(ADM?'':' (6 caractères minimum)')+'"><div id="lm" style="color:#B91C1C;font-size:13px;margin-top:8px"></div><button class="wide" onclick="auth()">'+(ADM?"Entrer":REG?"Créer mon compte":"Me connecter")+'</button>'+(ADM?'<button class="wide gh" onclick="ADM=false;render()">Retour</button>':'<button class="wide gh" onclick="REG=!REG;render()">'+(REG?"J’ai déjà un compte":"Je n’ai pas de compte")+'</button>')+'</div>'}
+  return hd(ADM?'Espace <b>Admin</b>':'LIVREUR <b>24/24</b>',ADM?"Réservé au propriétaire":"Les offres de colis, jour et nuit")+(ADM?'':'<div class="box ann"><p>1️⃣ Inscris-toi &nbsp; 2️⃣ Paie '+f(R.prix)+' &nbsp; 3️⃣ Reçois les offres en direct</p></div>')+'<div class="box"><h3>'+t+'</h3>'+(REG&&!ADM?'<input id="lnom" placeholder="Ton nom">':'')+'<input id="lid" '+(ADM?'type="email" placeholder="Email administrateur"':'type="tel" inputmode="numeric" placeholder="Ton numéro de téléphone"')+'><input id="lpw" type="password" placeholder="Mot de passe'+(ADM?'':' (6 caractères minimum)')+'"><div id="lm" style="color:#B91C1C;font-size:13px;margin-top:8px"></div><button class="wide" onclick="auth()">'+(ADM?"Entrer":REG?"Créer mon compte":"Me connecter")+'</button>'+(ADM?'<button class="wide gh" onclick="ADM=false;render()">Retour</button>':'<button class="wide gh" onclick="REG=!REG;render()">'+(REG?"J’ai déjà un compte":"Je n’ai pas de compte")+'</button>'+(REG?'':'<button class="rep" style="display:block;margin:14px auto 0" onclick="FG=true;render()">Mot de passe oublié ?</button>'))+'</div>'}
 function offresView(){
-  var d=days(),h=hd('LIVREUR <b>24/24</b>',"Les offres de colis, en direct",'<div class="st">'+(d>0?"✓ Abonnement actif · "+d+" jour"+(d>1?"s":"")+" restant"+(d>1?"s":""):"Abonnement inactif")+'</div>');
+  var d=days(),h=hd('LIVREUR <b>24/24</b>',"Les offres de colis, en direct",'<div class="st">'+(isAdmin()?"🔐 Mode administrateur":d>0?"✓ Abonnement actif · "+d+" jour"+(d>1?"s":"")+" restant"+(d>1?"s":""):"Abonnement inactif")+'</div>');
   if(R.annonce)h+='<div class="box ann"><p>📢 '+esc(R.annonce)+'</p></div>';
+  h+=pubsHtml();
   var nv=O.filter(function(o){return o.statut==="en_verification"}).length;
   if(isAdmin()&&nv)h+='<div class="box warn"><p>⚠ '+nv+' colis signalé(s) pris à vérifier.</p><button class="wide org" onclick="go(\'admin\')">Voir et vérifier</button></div>';
   if(!isAdmin()&&d<=0)return h+'<div class="box warn"><p>Pour voir les offres, active ton abonnement ('+f(R.prix)+' pour '+R.jours+' jours).</p><button class="wide org" onclick="go(\'abo\')">Je m’abonne</button></div>';
@@ -170,7 +200,7 @@ function profilView(){
   var z=(prof&&prof.zones)||[];
   return hd('Mon <b>profil</b>',esc(prof?prof.nom:""))+'<div class="box"><h3>Mes informations</h3><input id="pn" placeholder="Nom" value="'+esc(prof&&prof.nom)+'"><input id="pt" placeholder="Téléphone" value="'+esc(prof&&prof.telephone)+'"><button class="wide" onclick="saveProf()">Enregistrer</button></div>'+
   '<div class="box"><h3>Mes zones de livraison</h3><p>Tu ne reçois que les offres de ces communes. Aucune zone choisie = toutes les offres.</p><div class="chips">'+COMM.map(function(c){return '<button class="chip'+(z.indexOf(c)>-1?" on":"")+'" onclick="tz(\''+c+'\')">'+c+'</button>'}).join("")+'</div></div>'+
-  '<div class="box"><h3>Installer l’application</h3><p>Ajoute LIVREUR 24/24 sur ton écran d’accueil, comme une vraie appli.</p>'+(DIP?'<button class="wide org" onclick="DIP.prompt()">📲 Installer</button>':'<p>Dans Chrome : menu ⋮, puis « Installer l’application » ou « Ajouter à l’écran d’accueil ».</p>')+'</div>'+
+  '<div class="box"><h3>Changer mon mot de passe</h3><input id="np" type="password" placeholder="Nouveau mot de passe (6 caractères minimum)"><button class="wide" onclick="chgPwd()">Changer</button></div>'+'<div class="box"><h3>Installer l’application</h3><p>Ajoute LIVREUR 24/24 sur ton écran d’accueil, comme une vraie appli.</p>'+(DIP?'<button class="wide org" onclick="DIP.prompt()">📲 Installer</button>':'<p>Dans Chrome : menu ⋮, puis « Installer l’application » ou « Ajouter à l’écran d’accueil ».</p>')+'</div>'+
   '<div class="box"><h3>Voix</h3><button class="wide gh" onclick="speak(\'Test de la voix. Cocody vers Bingerville, mille cinq cents francs.\')">🔊 Tester la voix</button></div>'+
   '<div style="padding:0 16px"><button class="wide gh" onclick="sb.auth.signOut().then(function(){tab=\'offres\';start()})">Se déconnecter</button></div>';
 }
@@ -179,16 +209,19 @@ function convs(){var g={};MS.forEach(function(m){(g[m.livreur_id]=g[m.livreur_id
 function adminView(){
   var h=hd('Espace <b>Admin</b>',"Réservé au propriétaire")+'<div class="stats"><div><b>'+ST.ins+'</b>inscrits</div><div><b>'+ST.act+'</b>abonnés actifs</div><div><b>'+String(ST.act*R.prix).replace(/\B(?=(\d{3})+(?!\d))/g,"\u202F")+'</b>FCFA / période</div></div>';
   h+='<div class="h2">Paiements à valider <span>'+PAY.length+'</span></div>'+(PAY.map(function(x){var p=x.profiles||{};return '<div class="card"><div class="top"><span>Paiement '+esc(x.moyen)+' lancé · '+ago(x.cree_le)+'</span><span>'+esc(p.telephone)+'</span></div><div class="route" style="font-size:16px">'+esc(p.nom)+' · '+f(R.prix)+'</div><div class="row"><button class="mini ok" onclick="valider('+x.id+')">Valider (+'+R.jours+' jours)</button><button class="mini" style="color:#B91C1C" onclick="refuser('+x.id+')">Refuser</button></div></div>'}).join("")||'<div class="box"><p>Aucun paiement en attente.</p></div>');
+  h+='<div class="h2">Mots de passe oubliés <span>'+RS.length+'</span></div>'+(RS.map(function(x){return '<div class="card"><div class="top"><span>'+ago(x.cree_le)+'</span><span>'+esc(x.telephone)+'</span></div><div class="route" style="font-size:16px">'+esc(x.nom||"Livreur")+'</div><div class="row"><button class="mini ok" data-t="'+esc(x.telephone)+'" data-n="'+esc(x.nom||"")+'" onclick="resetPwd(this)">Nouveau mot de passe</button><button class="mini" onclick="ignorerReset('+x.id+')">Ignorer</button></div></div>'}).join("")||'<div class="box"><p>Aucune demande.</p></div>');
   var SV=O.filter(function(o){return o.statut==="en_verification"});
   h+='<div class="h2">Colis signalés pris <span>'+SV.length+'</span></div>'+(SV.map(function(o){return '<div class="card"><div class="top"><span>'+ago(o.cree_le)+'</span><span class="badge v">En vérification</span></div><div class="route" style="font-size:16px">'+esc(o.depart)+' <i>→</i> '+esc(o.arrivee)+' · '+f(o.prix)+'</div><div class="row"><button class="mini" style="color:#B91C1C" onclick="suppr('+o.id+')">Supprimer l’offre</button><button class="mini ok" onclick="bascule('+o.id+',\'disponible\')">Garder disponible</button></div></div>'}).join("")||'<div class="box"><p>Aucun signalement.</p></div>');
   var C=convs(),cv=C.filter(function(c){return c.id===OPEN})[0];
   h+='<div class="h2">Messages <span>'+C.reduce(function(s,c){return s+c.n},0)+'</span></div>'+C.map(function(c){return '<div class="card" onclick="OPEN=\''+c.id+'\';render()" style="cursor:pointer"><div class="top"><b style="color:var(--t);font-size:14px">'+esc(c.nom)+'</b>'+(c.n?'<span class="badge" style="background:#FFE4E6;color:#E11D48">'+c.n+' nouveau'+(c.n>1?"x":"")+'</span>':'')+'</div><p style="font-size:13px;color:var(--m);margin-top:6px">'+esc(c.a[c.a.length-1].texte)+'</p></div>'}).join("");
   if(cv)h+='<div class="box"><h3>'+esc(cv.nom)+'</h3>'+bub(cv.a,"admin")+'<input id="rep" placeholder="Ta réponse…"><button class="wide org" onclick="sendA()">Répondre</button><button class="wide gh" onclick="OPEN=null;render()">Fermer</button></div>';
-  h+='<div class="box"><h3>Publier une offre</h3><input id="a1" placeholder="Départ (ex : Cocody)"><input id="a2" placeholder="Arrivée (ex : Bingerville)"><input id="a3" type="number" inputmode="numeric" placeholder="Prix (ex : 1500)"><input id="a4" type="tel" placeholder="Numéro du client"><button class="wide org" onclick="publier()">Publier à tous les livreurs</button></div>';
+  h+='<div class="box"><h3>Publier une offre</h3><textarea id="fbtxt" rows="4" placeholder="Colle ici le texte de l’annonce Facebook…"></textarea><button class="wide gh" onclick="remplir()">✨ Remplir automatiquement</button><input id="a1" placeholder="Départ (ex : Cocody)"><input id="a2" placeholder="Arrivée (ex : Bingerville)"><input id="a3" type="number" inputmode="numeric" placeholder="Prix (ex : 1500)"><input id="a4" type="tel" placeholder="Numéro du client"><button class="wide org" onclick="publier()">Publier à tous les livreurs</button></div>';
   h+='<div class="h2">Offres publiées (moins de 5 h)</div>'+O.filter(actif).map(function(o){var p=o.statut==="pris";return '<div class="card"><div class="top"><span>'+ago(o.cree_le)+'</span><span class="badge'+(p?" p":"")+'">'+(p?"Pris":"Disponible")+'</span></div><div class="route" style="font-size:16px">'+esc(o.depart)+' <i>→</i> '+esc(o.arrivee)+' · '+f(o.prix)+'</div><div class="row"><button class="mini" onclick="bascule('+o.id+',\''+(p?"disponible":"pris")+'\')">'+(p?"Remettre disponible":"Marquer pris")+'</button><button class="mini" style="color:#B91C1C" onclick="suppr('+o.id+')">Supprimer</button></div></div>'}).join("");
   var EX=O.filter(function(o){return !actif(o)});
   h+='<div class="h2">Historique des offres expirées <span>'+EX.length+'</span></div>'+(EX.map(function(o){return '<div class="card" style="opacity:.75"><div class="top"><span>'+new Date(o.cree_le).toLocaleString("fr-FR")+'</span><span class="badge p">Expirée</span></div><div class="route" style="font-size:15px">'+esc(o.depart)+' <i>→</i> '+esc(o.arrivee)+' · '+f(o.prix)+'</div></div>'}).join("")||'<div class="box"><p>Aucune offre expirée.</p></div>');
-  h+='<div class="box"><h3>Réglages de l’appli</h3><label>Prix de l’abonnement (FCFA)</label><input id="r1" type="number" value="'+R.prix+'"><label>Durée (jours)</label><input id="r2" type="number" value="'+R.jours+'"><label>Lien de paiement Wave</label><input id="r3" value="'+esc(R.lien_wave)+'"><label>Lien de paiement Orange Money</label><input id="r4" value="'+esc(R.lien_om)+'"><label>Logo de l’appli (une image)</label><input id="rlogo" type="file" accept="image/*" onchange="logoPick(this)"><label>Annonce affichée aux livreurs</label><input id="r6" value="'+esc(R.annonce)+'"><button class="wide" onclick="sauver()">Enregistrer les réglages</button></div>';
+  h+='<div class="box"><h3>Décor de l’appli</h3><p>Couleur principale :</p><div class="chips">'+Object.keys(THEMES).map(function(k){return '<button class="chip'+((R.couleur||"vert")===k?" on":"")+'" onclick="R.couleur=\''+k+'\';render()">'+k+'</button>'}).join("")+'</div><p style="margin-top:10px">Logo et image d’en-tête : plus bas. Pense à enregistrer les réglages.</p></div>';
+  h+='<div class="box"><h3>Publicités (images)</h3><p>Elles s’affichent en haut de l’écran des offres, chez tous les livreurs.</p><input id="pubimg" type="file" accept="image/*" onchange="pubPick(this)"><input id="pubt" placeholder="Titre (facultatif)"><input id="publ" placeholder="Lien https://… (facultatif)"><button class="wide org" onclick="addPub()">Ajouter la publicité</button>'+PB.map(function(p){return '<div class="card" style="margin:12px 0 0"><img src="'+p.image+'" alt="" style="width:100%;height:110px;object-fit:cover;border-radius:12px"><div class="row"><span style="font-size:13px">'+esc(p.titre||"Sans titre")+'</span><button class="mini" style="color:#B91C1C" onclick="delPub('+p.id+')">Retirer</button></div></div>'}).join("")+'</div>';
+  h+='<div class="box"><h3>Réglages de l’appli</h3><label>Prix de l’abonnement (FCFA)</label><input id="r1" type="number" value="'+R.prix+'"><label>Durée (jours)</label><input id="r2" type="number" value="'+R.jours+'"><label>Lien de paiement Wave</label><input id="r3" value="'+esc(R.lien_wave)+'"><label>Lien de paiement Orange Money</label><input id="r4" value="'+esc(R.lien_om)+'"><label>Logo de l’appli (une image)</label><input id="rlogo" type="file" accept="image/*" onchange="logoPick(this)"><label>Image d’arrière-plan de l’en-tête</label><input id="rfond" type="file" accept="image/*" onchange="fondPick(this)"><button class="mini" style="margin-top:8px" onclick="NF=\'\';toast(\'Image retirée : enregistre les réglages\')">Retirer l’image</button><label>Annonce affichée aux livreurs</label><input id="r6" value="'+esc(R.annonce)+'"><button class="wide" onclick="sauver()">Enregistrer les réglages</button></div>';
   h+='<div style="padding:0 16px"><button class="wide gh" onclick="go(\'offres\')">Retour aux offres</button><button class="wide gh" onclick="sb.auth.signOut().then(function(){tab=\'offres\';start()})">Se déconnecter</button></div>';
   return h;
 }
@@ -204,11 +237,41 @@ async function sendA(){var v=$("rep").value.trim();if(!v||!OPEN)return;var r=awa
 async function saveProf(){var r=await sb.from("profiles").update({nom:$("pn").value.trim(),telephone:$("pt").value.trim()}).eq("id",me.id);if(bad(r))return;await loadProfile();render();toast("Profil enregistré")}
 async function tz(c){var z=((prof&&prof.zones)||[]).slice(),i=z.indexOf(c);i>-1?z.splice(i,1):z.push(c);var r=await sb.from("profiles").update({zones:z}).eq("id",me.id);if(bad(r))return;prof.zones=z;render()}
 async function signaler(id){if(!confirm("Confirmer : le colis a déjà été pris ?"))return;var r=await sb.rpc("signaler_pris",{p_offre:id});if(bad(r))return;await loadOffres();render();alert("Merci. L’administrateur va vérifier cette offre.")}
+var STOP=/^(besoin|livreurs?|urgent|urgence|svp|stp|de|du|des|depuis|à|a|au|aux|vers|pour|jusqu['’]?|appeler|appelez|contact|numéro|numero|tel|tél|prix|paiement|payer|fcfa|cfa|f|frs?|colis|course|un|une|le|la|les|et|merci|disponible|recherche|cherche|aller|livraison|livrer|départ|depart|arrivée|arrivee|moto|rapide|dispo|ici|sur)$/i;
+var COMM2=COMM.concat(["Riviera","Angré","Bassam","Songon","Dabou"]);
+function norm2(x){return x.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"")}
+function cap(x){return x?x.charAt(0).toUpperCase()+x.slice(1):""}
+function parseAnn(t){
+  var r={d:"",a:"",p:"",n:""},s=t.replace(/[\u200B-\u200D\uFEFF]/g,"").replace(/\s+/g," ");
+  var m=s.match(/(?:\+?225[ .-]?)?(0[1-9](?:[ .-]?\d{2}){4})/);
+  if(m){r.n=m[1].replace(/\D/g,"");s=s.replace(m[0]," ")}
+  var pm=s.match(/(\d[\d .]{2,8}\d)\s*(?:f\s?cfa|fcfa|f\b|cfa|frs?|francs?)/i)||s.match(/(?:prix|payer|paie|paiement|tarif|montant)\D{0,12}(\d[\d .]{2,8}\d)/i)||s.match(/\b(\d{3,5})\b/);
+  if(pm){var v=parseInt(pm[1].replace(/\D/g,""),10);if(v>=300&&v<=200000)r.p=String(v)}
+  var n=norm2(s),f=[];
+  COMM2.forEach(function(c){var i=n.indexOf(norm2(c));if(i>-1)f.push({c:c,i:i})});
+  f.sort(function(x,y){return x.i-y.i});
+  if(f.length>=2){r.d=f[0].c;r.a=f[1].c;return r}
+  var w=function(x){return x.split(" ").filter(Boolean)};
+  var m2=s.match(/^(.*?)(?:→|->|=>|➡️|➡|\bvers\b|\bpour\b|\bdestination\b|\bjusqu['’]?\s?[àa]\b)(.*)$/i);
+  if(m2){
+    var L=w(m2[1].replace(/[^A-Za-zÀ-ÿ' -]/g," ")).filter(function(x){return !STOP.test(x)}),R=[];
+    w(m2[2].replace(/[^A-Za-zÀ-ÿ' -]/g," ")).some(function(x){if(STOP.test(x))return R.length>0;R.push(x);return R.length>=3});
+    if(L.length)r.d=cap(L.slice(-3).join(" "));if(R.length)r.a=cap(R.join(" "));
+  }
+  if(!r.d&&f.length===1)r.d=f[0].c;
+  return r;
+}
+function remplir(){
+  var t=$("fbtxt").value.trim();if(!t){alert("Colle d’abord le texte de l’annonce.");return}
+  var r=parseAnn(t);$("a1").value=r.d;$("a2").value=r.a;$("a3").value=r.p;$("a4").value=r.n;
+  var m=[];if(!r.d)m.push("le départ");if(!r.a)m.push("l’arrivée");if(!r.p)m.push("le prix");if(!r.n)m.push("le numéro");
+  toast(m.length?"À compléter : "+m.join(", "):"✅ Offre remplie. Vérifie, puis publie.");
+}
 async function publier(){
   var g=function(i){return $(i).value.trim()},p=parseInt(g("a3"),10);
   if(!g("a1")||!g("a2")||!p){alert("Remplis le départ, l’arrivée et le prix.");return}
   var r=await sb.from("offres").insert({depart:g("a1"),arrivee:g("a2"),prix:p,telephone_client:g("a4")});if(bad(r))return;
-  ["a1","a2","a3","a4"].forEach(function(i){$(i).value=""});toast("Offre publiée");await loadOffres();render();
+  ["a1","a2","a3","a4","fbtxt"].forEach(function(i){$(i).value=""});toast("Offre publiée");await loadOffres();render();
 }
 async function bascule(id,s){var r=await sb.from("offres").update({statut:s}).eq("id",id);if(bad(r))return;await loadOffres();render()}
 async function suppr(id){if(!confirm("Supprimer cette offre ?"))return;var r=await sb.from("offres").delete().eq("id",id);if(bad(r))return;await loadOffres();render()}
@@ -218,9 +281,9 @@ function logoPick(i){var f=i.files[0];if(!f)return;var fr=new FileReader();fr.on
 async function sauver(){
   var g=function(i){return $(i).value.trim()},p=parseInt(g("r1"),10),j=parseInt(g("r2"),10);
   if(!p||!j){alert("Prix et durée obligatoires.");return}
-  var r=await sb.from("reglages").update({prix:p,jours:j,lien_wave:g("r3"),lien_om:g("r4"),annonce:g("r6"),logo:NL||R.logo||""}).eq("id",1);if(bad(r))return;
-  var x=await sb.from("reglages").select("*").eq("id",1).single();if(x.data)R=x.data;NL="";render();toast("Réglages enregistrés");
+  var r=await sb.from("reglages").update({prix:p,jours:j,lien_wave:g("r3"),lien_om:g("r4"),annonce:g("r6"),logo:NL||R.logo||"",fond:(NF===null?(R.fond||""):NF),couleur:R.couleur||"vert"}).eq("id",1);if(bad(r))return;
+  var x=await sb.from("reglages").select("*").eq("id",1).single();if(x.data)R=x.data;NL="";NF=null;render();toast("Réglages enregistrés");
 }
-sb.auth.onAuthStateChange(function(e){if(e==="SIGNED_OUT"){me=null;prof=null;render()}});
+sb.auth.onAuthStateChange(function(e){if(e==="SIGNED_OUT"){try{sessionStorage.removeItem("adm")}catch(x){}me=null;prof=null;render()}});
 start();
 </script></body></html>
