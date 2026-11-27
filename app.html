@@ -292,7 +292,7 @@ async function publier(){
   var g=function(i){return $(i).value.trim()},p=parseInt(g("a3"),10);
   if(!g("a1")||!g("a2")||!p){alert("Remplis le départ, l’arrivée et le prix.");return}
   var r=await sb.from("offres").insert({depart:g("a1"),arrivee:g("a2"),prix:p,telephone_client:g("a4")}).select("id").single();if(bad(r))return;
-  sb.functions.invoke("notifier",{body:{offre_id:r.data.id}}).then(function(f){toast(f.error?"Offre publiée, mais notification non envoyée":"Offre publiée · "+((f.data&&f.data.envoyes)||0)+" notification(s) envoyée(s)")});
+  sb.functions.invoke("clever-handler",{body:{offre_id:r.data.id}}).then(function(f){toast(f.error?"Offre publiée, mais notification non envoyée":"Offre publiée · "+((f.data&&f.data.envoyes)||0)+" notification(s) envoyée(s)")});
   ["a1","a2","a3","a4","fbtxt"].forEach(function(i){$(i).value=""});await loadOffres();render();
 }
 async function bascule(id,s){var r=await sb.from("offres").update({statut:s}).eq("id",id);if(bad(r))return;await loadOffres();render()}
