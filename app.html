@@ -65,7 +65,8 @@ var URL_="https://uaayndkcayllfpytxgmh.supabase.co",KEY="sb_publishable_eE1vmX2j
 var sb=supabase.createClient(URL_,KEY);
 var DEF_LOGO="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20512%20512%22%3E%3Cdefs%3E%3ClinearGradient%20id%3D%22g%22%20x1%3D%220%22%20y1%3D%220%22%20x2%3D%221%22%20y2%3D%221%22%3E%3Cstop%20offset%3D%220%22%20stop-color%3D%22%230F8A4B%22%2F%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22%23062F1B%22%2F%3E%3C%2FlinearGradient%3E%3C%2Fdefs%3E%3Crect%20width%3D%22512%22%20height%3D%22512%22%20rx%3D%22112%22%20fill%3D%22url%28%23g%29%22%2F%3E%3Ccircle%20cx%3D%22256%22%20cy%3D%22256%22%20r%3D%22170%22%20fill%3D%22none%22%20stroke%3D%22%23F38218%22%20stroke-width%3D%2230%22%20stroke-linecap%3D%22round%22%20stroke-dasharray%3D%22880%20188%22%20transform%3D%22rotate%28-70%20256%20256%29%22%2F%3E%3Ctext%20x%3D%22256%22%20y%3D%22308%22%20text-anchor%3D%22middle%22%20font-family%3D%22Arial%20Black%2CArial%2CHelvetica%2Csans-serif%22%20font-weight%3D%22900%22%20font-size%3D%22170%22%20fill%3D%22%23fff%22%3E24%3C%2Ftext%3E%3C%2Fsvg%3E";
 var AVERT="IMPORTANT : Avant de vous déplacer, veuillez appeler directement le contact indiqué pour vérifier si le colis est toujours disponible. Les offres peuvent être récupérées rapidement. Premier arrivé, premier servi.",AVERT_C="⚠ Appelle avant de te déplacer. Premier arrivé, premier servi.";
-var NL="",DIP=null,PUSHN=0;
+var NL="",DIP=null,PUSHN=0,REV=0;
+async function nettoyer(){try{await sb.from("offres").delete().lt("cree_le",new Date(Date.now()-5*36e5).toISOString());await loadOffres()}catch(e){}}
 async function loadPush(){try{var r=await sb.from("push_abos").select("id",{count:"exact",head:true}).eq("user_id",me.id);PUSHN=r.count||0}catch(e){}}
 async function testNotif(){if(!("serviceWorker" in navigator)||!("Notification" in window)||Notification.permission!=="granted"){alert("Active d’abord les notifications.");return}try{var reg=await navigator.serviceWorker.ready;await reg.showNotification("🔔 Test LIVREUR 24/24",{body:"Si tu vois ceci, ton téléphone affiche bien les notifications.",icon:"icon-192%20(2).png",vibrate:[300,100,300]})}catch(e){alert("Erreur : "+e.message)}}
 var CREATEUR="MR. SILEYMANE SY",SOCIETE="SY.SAP SERVICE",EMAIL="sysapserviceafrique@gmail.com",TEL="",VERSION="1.0",ANNEE="2026";
@@ -75,7 +76,7 @@ function actif(o){return Date.now()-new Date(o.cree_le)<5*36e5}
 function nouv(o){return Date.now()-new Date(o.cree_le)<18e5}
 window.addEventListener("beforeinstallprompt",function(e){e.preventDefault();DIP=e;if(me)render()});
 var $=function(i){return document.getElementById(i)};
-var me=null,prof=null,R={prix:500,jours:7,lien_wave:"",lien_om:"",annonce:"",logo:"",fond:"",couleur:"vert"},O=[],MS=[],PAY=[],ST={ins:0,act:0},tab="offres",REG=true,ADM=false,FG=false,NF=null,RS=[],TP=0,TT=0,VOX=true,FZ="mes",OPEN=null,ch=null,PI="";
+var me=null,prof=null,R={prix:500,jours:7,lien_wave:"",lien_om:"",annonce:"",logo:"",fond:"",couleur:"vert",revenu_depuis:""},O=[],MS=[],PAY=[],ST={ins:0,act:0},tab="offres",REG=true,ADM=false,FG=false,NF=null,RS=[],TP=0,TT=0,VOX=true,FZ="mes",OPEN=null,ch=null,PI="";
 var COMM=["Cocody","Yopougon","Abobo","Marcory","Koumassi","Plateau","Adjamé","Bingerville","Port-Bouët","Treichville","Attécoubé","Anyama"];
 function esc(s){return String(s==null?"":s).replace(/[&<>"']/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]})}
 function f(n){return String(n).replace(/\B(?=(\d{3})+(?!\d))/g,"\u202F")+" FCFA"}
@@ -159,11 +160,15 @@ async function loadMsgs(){
   else{var b=await sb.from("messages").select("*").eq("livreur_id",me.id).order("cree_le");MS=b.data||[]}
 }
 async function loadAdmin(){
+  await nettoyer();
   var a=await sb.from("paiements").select("id,moyen,cree_le,profiles(nom,telephone)").eq("statut","en_attente").order("cree_le");PAY=a.data||[];
   var b=await sb.from("profiles").select("*",{count:"exact",head:true}).eq("role","livreur");
   var c=await sb.from("profiles").select("*",{count:"exact",head:true}).gt("abonnement_fin",new Date().toISOString());
   ST={ins:b.count||0,act:c.count||0};
   var d=await sb.from("demandes_reset").select("*").eq("traite",false).order("cree_le");RS=d.data||[];
+  var pv=await sb.from("paiements").select("montant,valide_le,cree_le").eq("statut","valide").limit(5000);
+  var dep=new Date(R.revenu_depuis||0).getTime();
+  REV=(pv.data||[]).filter(function(x){return new Date(x.valide_le||x.cree_le).getTime()>dep}).reduce(function(t,x){return t+(x.montant||R.prix)},0);
 }
 function subscribe(){
   if(ch)sb.removeChannel(ch);
@@ -175,7 +180,7 @@ function subscribe(){
      render()})
    .on("postgres_changes",{event:"INSERT",schema:"public",table:"messages"},async function(){await loadMsgs();render()})
    .on("postgres_changes",{event:"INSERT",schema:"public",table:"demandes_reset"},async function(){if(isAdmin()){await loadAdmin();toast("🔑 Demande de mot de passe");render()}})
-   .on("postgres_changes",{event:"INSERT",schema:"public",table:"paiements"},async function(){if(isAdmin()){await loadAdmin();render()}})
+   .on("postgres_changes",{event:"INSERT",schema:"public",table:"paiements"},async function(){if(isAdmin()){await loadAdmin();toast("💰 Un livreur déclare avoir payé : vérifie dans Wave / Orange Money",7000);render()}})
    .subscribe();
 }
 function render(){
@@ -203,7 +208,7 @@ function offresView(){
   if(isAdmin()&&nv)h+='<div class="box warn"><p>⚠ '+nv+' colis signalé(s) pris à vérifier.</p><button class="wide org" onclick="go(\'admin\')">Voir et vérifier</button></div>';
   if(!isAdmin()&&d<=0)return h+'<div class="box warn"><p>Pour voir les offres, active ton abonnement ('+f(R.prix)+' pour '+R.jours+' jours).</p><button class="wide org" onclick="go(\'abo\')">Je m’abonne</button></div>';
   if(!isAdmin()&&d<=2)h+='<div class="box warn"><p>⚠ Il te reste '+d+' jour'+(d>1?"s":"")+'. Renouvelle dans l’onglet Abonnement.</p></div>';
-  var L=O.filter(function(o){return vis(o)&&actif(o)}),c=L.filter(function(o){return o.statut!=="pris"}).length;
+  var L=O.filter(function(o){return vis(o)&&actif(o)&&o.statut!=="pris"}),c=L.filter(function(o){return o.statut!=="pris"}).length;
   h+='<div class="box" style="padding:12px"><div class="sw"><span style="font-size:13px;font-weight:700">🔊 Lecture vocale des offres</span><button class="'+(VOX?"on":"")+'" onclick="VOX=!VOX;if(VOX)speak(\'Voix activée\');render()">'+(VOX?"Activée":"Coupée")+'</button></div></div>';
   h+='<div class="h2">Offres du moment <span>'+c+'</span></div><div class="chips" style="padding:0 16px 10px;margin:0"><button class="chip'+(FZ==="mes"?" on":"")+'" onclick="FZ=\'mes\';render()">Mes zones</button><button class="chip'+(FZ==="toutes"?" on":"")+'" onclick="FZ=\'toutes\';render()">Toutes</button></div>';
   return h+(L.map(function(o){var p=o.statut==="pris",v=o.statut==="en_verification";return '<div class="card'+(p?" pris":"")+'"><div class="top"><span>'+ago(o.cree_le)+'</span><span class="badge'+(p?" p":v?" v":"")+'">'+(p?"Pris":v?"En vérification":"Disponible")+'</span></div><div class="route">'+esc(o.depart)+' <i>→</i> '+esc(o.arrivee)+'</div><div class="row"><div class="px">'+f(o.prix)+'</div><div><button class="ear" onclick="speak(\''+esc(dite(o)).replace(/'/g,"")+'\')">🔊</button> '+(o.telephone_client?'<a class="call" href="tel:'+esc(o.telephone_client)+'">📞 Appeler</a>':'')+'</div></div>'+(p?'':'<div class="warn-s">'+(nouv(o)?AVERT:AVERT_C)+'</div>')+(isAdmin()||p||v?'':'<button class="rep" onclick="signaler('+o.id+')">🚩 Colis déjà pris</button>')+'</div>'}).join("")||'<div class="box"><p>Aucune offre pour l’instant.</p></div>');
@@ -211,8 +216,8 @@ function offresView(){
 function aboView(){
   var d=days();
   return hd('LIVREUR <b>24/24</b>',"Abonnement",'<div class="st">'+(d>0?d+" jour"+(d>1?"s":"")+" restant"+(d>1?"s":""):"Abonnement inactif")+'</div>')+
-  '<div class="box"><h3>Paye '+f(R.prix)+' pour '+R.jours+' jours</h3><p>Choisis ton moyen de paiement. Paie avec le numéro de ton profil, c’est plus rapide à valider.</p><button class="wide wave" onclick="pay(\'Wave\')">Payer avec Wave</button><button class="wide om" onclick="pay(\'Orange Money\')">Payer avec Orange Money</button></div>'+
-  (PI?'<div class="box ann"><p>✅ '+esc(PI)+'</p></div>':'')+
+  '<div class="box"><h3>Paye '+f(R.prix)+' pour '+R.jours+' jours</h3><p>Choisis ton moyen de paiement. Paie avec le numéro de ton profil, c’est plus rapide à valider.</p>'+(R.lien_wave?'<a class="wide wave" href="'+esc(R.lien_wave)+'" target="_blank" rel="noopener" style="text-align:center;text-decoration:none;color:#fff">1️⃣ Payer avec Wave</a>':'')+(R.lien_om?'<a class="wide om" href="'+esc(R.lien_om)+'" target="_blank" rel="noopener" style="text-align:center;text-decoration:none;color:#fff">1️⃣ Payer avec Orange Money</a>':'')+'</div>'+
+  (PI?'<div class="box ann"><p>✅ '+esc(PI)+'</p></div>':'')+'<div class="box"><h3>2️⃣ Tu as payé ?</h3><p>Touche le bouton du moyen utilisé. L’administrateur verra ta demande et activera ton abonnement.</p><button class="wide" onclick="dejaPaye(\'Wave\')">J’ai payé avec Wave</button><button class="wide gh" onclick="dejaPaye(\'Orange Money\')">J’ai payé avec Orange Money</button><button class="rep" style="display:block;margin:14px auto 0" onclick="copierLien()">Le lien ne s’ouvre pas ? Copier le lien</button></div>'+
   '<div class="box"><h3>Comment ça marche</h3><ul style="padding-left:18px"><li>Tu paies comme sur une boutique.</li><li>La validation de ton abonnement peut prendre de <b>5 minutes à 1 heure</b>.</li><li>Dès que c’est validé, tu reçois les offres. Un souci ? Onglet Aide.</li></ul></div>';
 }
 function bub(a,mine){return a.map(function(m){var me_=m.auteur===mine;return '<div style="display:flex;justify-content:'+(me_?"flex-end":"flex-start")+'"><div style="max-width:82%;margin:4px 0;padding:10px 13px;border-radius:16px;font-size:14px;'+(me_?"background:var(--g);color:#fff":"background:#EEF1EF")+'">'+esc(m.texte)+'</div></div>'}).join("")}
@@ -228,8 +233,9 @@ function profilView(){
 function convs(){var g={};MS.forEach(function(m){(g[m.livreur_id]=g[m.livreur_id]||[]).push(m)});
   return Object.keys(g).map(function(k){var a=g[k],n=0;for(var i=a.length-1;i>=0&&a[i].auteur==="livreur";i--)n++;return {id:k,nom:(a[0].profiles&&a[0].profiles.nom)||"Livreur",a:a,n:n,t:a[a.length-1].cree_le}}).sort(function(x,y){return new Date(y.t)-new Date(x.t)})}
 function adminView(){
-  var h=hd('Espace <b>Admin</b>',"Réservé au propriétaire")+'<div class="stats"><div><b>'+ST.ins+'</b>inscrits</div><div><b>'+ST.act+'</b>abonnés actifs</div><div><b>'+String(ST.act*R.prix).replace(/\B(?=(\d{3})+(?!\d))/g,"\u202F")+'</b>FCFA / période</div></div>';
-  h+='<div class="h2">Paiements à valider <span>'+PAY.length+'</span></div>'+(PAY.map(function(x){var p=x.profiles||{};return '<div class="card"><div class="top"><span>Paiement '+esc(x.moyen)+' lancé · '+ago(x.cree_le)+'</span><span>'+esc(p.telephone)+'</span></div><div class="route" style="font-size:16px">'+esc(p.nom)+' · '+f(R.prix)+'</div><div class="row"><button class="mini ok" onclick="valider('+x.id+')">Valider (+'+R.jours+' jours)</button><button class="mini" style="color:#B91C1C" onclick="refuser('+x.id+')">Refuser</button></div></div>'}).join("")||'<div class="box"><p>Aucun paiement en attente.</p></div>');
+  var h=hd('Espace <b>Admin</b>',"Réservé au propriétaire")+'<div class="stats"><div><b>'+ST.ins+'</b>inscrits</div><div><b>'+ST.act+'</b>abonnés actifs</div><div><b>'+String(REV).replace(/\B(?=(\d{3})+(?!\d))/g,"\u202F")+'</b>FCFA encaissés</div></div>';
+  h+='<div class="h2">Paiements à valider <span>'+PAY.length+'</span></div>'+(PAY.map(function(x){var p=x.profiles||{};return '<div class="card"><div class="top"><span>A déclaré avoir payé ('+esc(x.moyen)+') · '+ago(x.cree_le)+'</span><span>'+esc(p.telephone)+'</span></div><div class="route" style="font-size:16px">'+esc(p.nom)+' · '+f(R.prix)+'</div><div class="row"><button class="mini ok" onclick="valider('+x.id+')">Valider (+'+R.jours+' jours)</button><button class="mini" style="color:#B91C1C" onclick="refuser('+x.id+')">Refuser</button></div></div>'}).join("")||'<div class="box"><p>Aucun paiement en attente.</p></div>');
+  h+='<div style="padding:8px 18px;font-size:12px;color:var(--m)">Depuis le '+new Date(R.revenu_depuis||Date.now()).toLocaleString("fr-FR")+' <button class="mini" style="margin-left:6px" onclick="resetRev()">↺ Remettre à zéro</button></div>';
   h+='<div class="h2">Mots de passe oubliés <span>'+RS.length+'</span></div>'+(RS.map(function(x){return '<div class="card"><div class="top"><span>'+ago(x.cree_le)+'</span><span>'+esc(x.telephone)+'</span></div><div class="route" style="font-size:16px">'+esc(x.nom||"Livreur")+'</div><div class="row"><button class="mini ok" data-t="'+esc(x.telephone)+'" data-n="'+esc(x.nom||"")+'" onclick="resetPwd(this)">Nouveau mot de passe</button><button class="mini" onclick="ignorerReset('+x.id+')">Ignorer</button></div></div>'}).join("")||'<div class="box"><p>Aucune demande.</p></div>');
   var SV=O.filter(function(o){return o.statut==="en_verification"});
   h+='<div class="h2">Colis signalés pris <span>'+SV.length+'</span></div>'+(SV.map(function(o){return '<div class="card"><div class="top"><span>'+ago(o.cree_le)+'</span><span class="badge v">En vérification</span></div><div class="route" style="font-size:16px">'+esc(o.depart)+' <i>→</i> '+esc(o.arrivee)+' · '+f(o.prix)+'</div><div class="row"><button class="mini" style="color:#B91C1C" onclick="suppr('+o.id+')">Supprimer l’offre</button><button class="mini ok" onclick="bascule('+o.id+',\'disponible\')">Garder disponible</button></div></div>'}).join("")||'<div class="box"><p>Aucun signalement.</p></div>');
@@ -237,7 +243,7 @@ function adminView(){
   h+='<div class="h2">Messages <span>'+C.reduce(function(s,c){return s+c.n},0)+'</span></div>'+C.map(function(c){return '<div class="card" onclick="OPEN=\''+c.id+'\';render()" style="cursor:pointer"><div class="top"><b style="color:var(--t);font-size:14px">'+esc(c.nom)+'</b>'+(c.n?'<span class="badge" style="background:#FFE4E6;color:#E11D48">'+c.n+' nouveau'+(c.n>1?"x":"")+'</span>':'')+'</div><p style="font-size:13px;color:var(--m);margin-top:6px">'+esc(c.a[c.a.length-1].texte)+'</p></div>'}).join("");
   if(cv)h+='<div class="box"><h3>'+esc(cv.nom)+'</h3>'+bub(cv.a,"admin")+'<input id="rep" placeholder="Ta réponse…"><button class="wide org" onclick="sendA()">Répondre</button><button class="wide gh" onclick="OPEN=null;render()">Fermer</button></div>';
   h+='<div class="box"><h3>Publier une offre</h3><textarea id="fbtxt" rows="4" placeholder="Colle ici le texte de l’annonce Facebook…"></textarea><button class="wide gh" onclick="remplir()">✨ Remplir automatiquement</button><input id="a1" placeholder="Départ (ex : Cocody)"><input id="a2" placeholder="Arrivée (ex : Bingerville)"><input id="a3" type="number" inputmode="numeric" placeholder="Prix (ex : 1500)"><input id="a4" type="tel" placeholder="Numéro du client"><button class="wide org" onclick="publier()">Publier à tous les livreurs</button></div>';
-  h+='<div class="h2">Offres publiées (moins de 5 h)</div>'+O.filter(actif).map(function(o){var p=o.statut==="pris";return '<div class="card"><div class="top"><span>'+ago(o.cree_le)+'</span><span class="badge'+(p?" p":"")+'">'+(p?"Pris":"Disponible")+'</span></div><div class="route" style="font-size:16px">'+esc(o.depart)+' <i>→</i> '+esc(o.arrivee)+' · '+f(o.prix)+'</div><div class="row"><button class="mini" onclick="bascule('+o.id+',\''+(p?"disponible":"pris")+'\')">'+(p?"Remettre disponible":"Marquer pris")+'</button><button class="mini" style="color:#B91C1C" onclick="suppr('+o.id+')">Supprimer</button></div></div>'}).join("");
+  h+='<div class="h2">Offres publiées (moins de 5 h)</div>'+O.filter(function(o){return actif(o)&&o.statut!=="pris"}).map(function(o){var p=o.statut==="pris";return '<div class="card"><div class="top"><span>'+ago(o.cree_le)+'</span><span class="badge'+(p?" p":"")+'">'+(p?"Pris":"Disponible")+'</span></div><div class="route" style="font-size:16px">'+esc(o.depart)+' <i>→</i> '+esc(o.arrivee)+' · '+f(o.prix)+'</div><div class="row"><button class="mini" onclick="bascule('+o.id+',\''+(p?"disponible":"pris")+'\')">'+(p?"Remettre disponible":"✅ Pris : retirer")+'</button><button class="mini" style="color:#B91C1C" onclick="suppr('+o.id+')">Supprimer</button></div></div>'}).join("");
   var EX=O.filter(function(o){return !actif(o)});
   h+='<div class="h2">Historique des offres expirées <span>'+EX.length+'</span></div>'+(EX.map(function(o){return '<div class="card" style="opacity:.75"><div class="top"><span>'+new Date(o.cree_le).toLocaleString("fr-FR")+'</span><span class="badge p">Expirée</span></div><div class="route" style="font-size:15px">'+esc(o.depart)+' <i>→</i> '+esc(o.arrivee)+' · '+f(o.prix)+'</div></div>'}).join("")||'<div class="box"><p>Aucune offre expirée.</p></div>');
   h+='<div class="box"><h3>Décor de l’appli</h3><p>Couleur principale :</p><div class="chips">'+Object.keys(THEMES).map(function(k){return '<button class="chip'+((R.couleur||"vert")===k?" on":"")+'" onclick="R.couleur=\''+k+'\';render()">'+k+'</button>'}).join("")+'</div><p style="margin-top:10px">Logo et image d’en-tête : plus bas. Pense à enregistrer les réglages.</p></div>';
@@ -246,14 +252,12 @@ function adminView(){
   h+='<div style="padding:0 16px"><button class="wide gh" onclick="go(\'offres\')">Retour aux offres</button><button class="wide gh" onclick="sb.auth.signOut().then(function(){tab=\'offres\';start()})">Se déconnecter</button></div>';
   return h;
 }
-async function pay(m){
-  var l=m==="Wave"?R.lien_wave:R.lien_om;
-  if(!l){alert("Le paiement "+m+" n’est pas encore configuré.");return}
+async function dejaPaye(m){
   var ex=await sb.from("paiements").select("id").eq("livreur_id",me.id).eq("statut","en_attente").limit(1);
   if(!(ex.data&&ex.data.length)){var r=await sb.from("paiements").insert({livreur_id:me.id,moyen:m});if(r.error&&r.error.code!=="23505"){bad(r);return}}
-  PI="Paiement "+m+" lancé. La validation de ton abonnement peut prendre de 5 minutes à 1 heure.";render();
-  window.open(l,"_blank")||(location.href=l);
+  PI="Merci ! Ta demande est envoyée. La validation de ton abonnement peut prendre de 5 minutes à 1 heure.";render();
 }
+function copierLien(){var l=R.lien_wave||R.lien_om;if(!l)return;var d=function(){toast("Lien copié. Colle-le dans Safari ou Chrome.")};try{navigator.clipboard.writeText(l).then(d,function(){prompt("Copie ce lien :",l)})}catch(e){prompt("Copie ce lien :",l)}}
 async function sendL(){var v=$("msg").value.trim();if(!v)return;var r=await sb.from("messages").insert({livreur_id:me.id,auteur:"livreur",texte:v});if(bad(r))return;$("msg").value="";await loadMsgs();render()}
 async function sendA(){var v=$("rep").value.trim();if(!v||!OPEN)return;var r=await sb.from("messages").insert({livreur_id:OPEN,auteur:"admin",texte:v});if(bad(r))return;$("rep").value="";await loadMsgs();render()}
 async function saveProf(){var r=await sb.from("profiles").update({nom:$("pn").value.trim(),telephone:$("pt").value.trim()}).eq("id",me.id);if(bad(r))return;await loadProfile();render();toast("Profil enregistré")}
@@ -299,12 +303,18 @@ async function publier(){
   });
   ["a1","a2","a3","a4","fbtxt"].forEach(function(i){$(i).value=""});await loadOffres();render();
 }
-async function bascule(id,s){var r=await sb.from("offres").update({statut:s}).eq("id",id);if(bad(r))return;await loadOffres();render()}
+async function bascule(id,s){if(s==="pris"){var d=await sb.from("offres").delete().eq("id",id);if(bad(d))return;await loadOffres();render();toast("Offre retirée");return}
+  var r=await sb.from("offres").update({statut:s}).eq("id",id);if(bad(r))return;await loadOffres();render()}
 async function suppr(id){if(!confirm("Supprimer cette offre ?"))return;var r=await sb.from("offres").delete().eq("id",id);if(bad(r))return;await loadOffres();render()}
 var BUSY=false;
 async function valider(id){if(BUSY)return;BUSY=true;try{var r=await sb.rpc("valider_paiement",{p_id:id});if(bad(r))return;await loadAdmin();render();toast("Accès activé pour "+R.jours+" jours")}finally{BUSY=false}}
 async function refuser(id){var r=await sb.from("paiements").update({statut:"refuse"}).eq("id",id);if(bad(r))return;await loadAdmin();render()}
 function logoPick(i){var f=i.files[0];if(!f)return;var fr=new FileReader();fr.onload=function(){var im=new Image();im.onload=function(){var c=document.createElement("canvas");c.width=c.height=192;var x=c.getContext("2d"),m=Math.min(im.width,im.height);x.drawImage(im,(im.width-m)/2,(im.height-m)/2,m,m,0,0,192,192);NL=c.toDataURL("image/png");toast("Logo prêt : enregistre les réglages")};im.src=fr.result};fr.readAsDataURL(f)}
+async function resetRev(){
+  if(!confirm("Remettre le total encaissé à zéro ? Les paiements déjà validés restent enregistrés."))return;
+  var r=await sb.from("reglages").update({revenu_depuis:new Date().toISOString()}).eq("id",1);if(bad(r))return;
+  var x=await sb.from("reglages").select("*").eq("id",1).single();if(x.data)R=x.data;await loadAdmin();render();toast("Total remis à zéro");
+}
 async function sauver(){
   var g=function(i){return $(i).value.trim()},p=parseInt(g("r1"),10),j=parseInt(g("r2"),10);
   if(!p||!j){alert("Prix et durée obligatoires.");return}
