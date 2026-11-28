@@ -59,14 +59,15 @@ input,textarea{width:100%;border:1px solid var(--line);background:var(--bg);bord
 .hd{position:relative;overflow:hidden}.hd::after{content:"";position:absolute;right:-30px;bottom:-40px;width:200px;height:200px;background:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20512%20512%22%3E%3Ccircle%20cx%3D%22256%22%20cy%3D%22256%22%20r%3D%22170%22%20fill%3D%22none%22%20stroke%3D%22%23fff%22%20stroke-width%3D%2230%22%20stroke-linecap%3D%22round%22%20stroke-dasharray%3D%22880%20188%22%20transform%3D%22rotate%28-70%20256%20256%29%22%2F%3E%3Ctext%20x%3D%22256%22%20y%3D%22308%22%20text-anchor%3D%22middle%22%20font-family%3D%22Arial%20Black%2CArial%2Csans-serif%22%20font-weight%3D%22900%22%20font-size%3D%22170%22%20fill%3D%22%23fff%22%3E24%3C%2Ftext%3E%3C%2Fsvg%3E") no-repeat center/contain;opacity:.09;pointer-events:none}.hd>*{position:relative;z-index:1}
 </style></head><body>
 <div class="toast" id="toast"></div>
-<div class="app"><div id="main"></div><div class="nav" id="nav" style="display:none"></div></div>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
-<script>
+<div class="app"><div id="main"><p style="padding:48px 24px;text-align:center;color:#5D6A62;font-family:system-ui,sans-serif">Chargement…</p></div><div class="nav" id="nav" style="display:none"></div></div>
+<script type="text/plain" id="app-code">
 var URL_="https://uaayndkcayllfpytxgmh.supabase.co",KEY="sb_publishable_eE1vmX2jjmHy22iE4ISVPg_oGBuic2t";
 var sb=supabase.createClient(URL_,KEY);
 var DEF_LOGO="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20512%20512%22%3E%3Cdefs%3E%3ClinearGradient%20id%3D%22g%22%20x1%3D%220%22%20y1%3D%220%22%20x2%3D%221%22%20y2%3D%221%22%3E%3Cstop%20offset%3D%220%22%20stop-color%3D%22%230F8A4B%22%2F%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22%23062F1B%22%2F%3E%3C%2FlinearGradient%3E%3C%2Fdefs%3E%3Crect%20width%3D%22512%22%20height%3D%22512%22%20rx%3D%22112%22%20fill%3D%22url%28%23g%29%22%2F%3E%3Ccircle%20cx%3D%22256%22%20cy%3D%22256%22%20r%3D%22170%22%20fill%3D%22none%22%20stroke%3D%22%23F38218%22%20stroke-width%3D%2230%22%20stroke-linecap%3D%22round%22%20stroke-dasharray%3D%22880%20188%22%20transform%3D%22rotate%28-70%20256%20256%29%22%2F%3E%3Ctext%20x%3D%22256%22%20y%3D%22308%22%20text-anchor%3D%22middle%22%20font-family%3D%22Arial%20Black%2CArial%2CHelvetica%2Csans-serif%22%20font-weight%3D%22900%22%20font-size%3D%22170%22%20fill%3D%22%23fff%22%3E24%3C%2Ftext%3E%3C%2Fsvg%3E";
 var AVERT="IMPORTANT : Avant de vous déplacer, veuillez appeler directement le contact indiqué pour vérifier si le colis est toujours disponible. Les offres peuvent être récupérées rapidement. Premier arrivé, premier servi.",AVERT_C="⚠ Appelle avant de te déplacer. Premier arrivé, premier servi.";
-var NL="",DIP=null;
+var NL="",DIP=null,PUSHN=0;
+async function loadPush(){try{var r=await sb.from("push_abos").select("id",{count:"exact",head:true}).eq("user_id",me.id);PUSHN=r.count||0}catch(e){}}
+async function testNotif(){if(!("serviceWorker" in navigator)||!("Notification" in window)||Notification.permission!=="granted"){alert("Active d’abord les notifications.");return}try{var reg=await navigator.serviceWorker.ready;await reg.showNotification("🔔 Test LIVREUR 24/24",{body:"Si tu vois ceci, ton téléphone affiche bien les notifications.",icon:"icon-192%20(2).png",vibrate:[300,100,300]})}catch(e){alert("Erreur : "+e.message)}}
 var CREATEUR="MR. SILEYMANE SY",SOCIETE="SY.SAP SERVICE",EMAIL="sysapserviceafrique@gmail.com",TEL="",VERSION="1.0",ANNEE="2026";
 function normTel(x){var d=String(x).replace(/\D/g,"");if(d.length===13&&d.indexOf("225")===0)d=d.slice(3);return d}
 function LOGO(){return (typeof R!=="undefined"&&R.logo)||DEF_LOGO}
@@ -81,7 +82,7 @@ function f(n){return String(n).replace(/\B(?=(\d{3})+(?!\d))/g,"\u202F")+" FCFA"
 function ago(t){var m=Math.max(0,Math.round((Date.now()-new Date(t))/6e4));return m<1?"à l’instant":m<60?"il y a "+m+" min":m<1440?"il y a "+Math.round(m/60)+" h":"il y a "+Math.round(m/1440)+" j"}
 function days(){return prof&&prof.abonnement_fin?Math.max(0,Math.ceil((new Date(prof.abonnement_fin)-Date.now())/864e5)):0}
 function isAdmin(){return !!prof&&prof.role==="admin"}
-function toast(t){var e=$("toast");e.textContent=t;e.classList.add("show");setTimeout(function(){e.classList.remove("show")},3500)}
+function toast(t,ms){var e=$("toast");e.textContent=t;e.classList.add("show");setTimeout(function(){e.classList.remove("show")},ms||3500)}
 function speak(t){try{speechSynthesis.cancel();var u=new SpeechSynthesisUtterance(t);u.lang="fr-FR";speechSynthesis.speak(u)}catch(e){}}
 function dite(o){return "Nouvelle offre. "+o.depart+" vers "+o.arrivee+". "+o.prix+" francs."}
 function emailOf(s){s=s.trim();return s.indexOf("@")>-1?s.toLowerCase():s.replace(/\D/g,"")+"@livreur.sysap.ci"}
@@ -116,11 +117,11 @@ async function activerPush(){
   var perm=await Notification.requestPermission();
   if(perm!=="granted"){alert("Notifications refusées. Autorise-les dans les réglages du téléphone, puis réessaie.");render();return}
   try{
-    var reg=await navigator.serviceWorker.ready;
+    var reg=await Promise.race([navigator.serviceWorker.ready,new Promise(function(_,rj){setTimeout(function(){rj(new Error("Le service des notifications ne démarre pas. Ferme et rouvre l’appli, puis réessaie."))},8000)})]);
     var sub=(await reg.pushManager.getSubscription())||(await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:b64(VAPID)}));
     var j=sub.toJSON();
     var r=await sb.from("push_abos").upsert({user_id:me.id,endpoint:j.endpoint,p256dh:j.keys.p256dh,cle_auth:j.keys.auth},{onConflict:"endpoint"});
-    if(bad(r))return;toast("🔔 Notifications activées");render();
+    if(bad(r))return;await loadPush();toast("🔔 Notifications activées");render();
   }catch(e){alert("Erreur : "+e.message)}
 }
 function aboutBox(){
@@ -182,14 +183,14 @@ function render(){
   var keep={},af=document.activeElement&&document.activeElement.id;
   document.querySelectorAll("input,textarea").forEach(function(e){if(e.id)keep[e.id]=e.value});
   var v=!me?authView():tab==="abo"?aboView():tab==="aide"?aideView():tab==="profil"?profilView():(tab==="admin"&&isAdmin())?adminView():offresView();
-  $("main").innerHTML=v;
+  $("main").innerHTML=v;$("main").setAttribute("data-ok","1");
   for(var k in keep){if($(k))$(k).value=keep[k]}
   if(af&&$(af))try{$(af).focus()}catch(e){}
   var T=[["offres","Offres","M3 7l9-4 9 4-9 4zM3 7v10l9 4 9-4V7M12 11v10"],["abo","Abonnement","M3 9h18M5 6h14a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2z"],["aide","Aide","M4 5h16v11H9l-5 4z"],["profil","Profil","M12 4a4 4 0 1 0 0 8 4 4 0 0 0 0-8zM4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"]];
   var n=$("nav");n.style.display=me?"flex":"none";
   n.innerHTML=T.map(function(t){return '<button class="'+(t[0]===tab?"on":"")+'" onclick="go(\''+t[0]+'\')"><svg viewBox="0 0 24 24"><path d="'+t[2]+'"/></svg>'+t[1]+'</button>'}).join("");
 }
-async function go(t){tab=t;if(me){await loadProfile();if(t==="admin"){await loadAdmin();await loadMsgs()}if(t==="aide")await loadMsgs()}render();window.scrollTo(0,0)}
+async function go(t){tab=t;if(me){await loadProfile();if(t==="admin"){await loadAdmin();await loadMsgs()}if(t==="aide")await loadMsgs();if(t==="profil")await loadPush()}render();window.scrollTo(0,0)}
 function authView(){
   if(FG)return forgotView();
   var t=ADM?"Espace Admin":REG?"Créer mon compte":"Connexion";
@@ -220,7 +221,7 @@ function profilView(){
   var z=(prof&&prof.zones)||[];
   return hd('Mon <b>profil</b>',esc(prof?prof.nom:""))+'<div class="box"><h3>Mes informations</h3><input id="pn" placeholder="Nom" value="'+esc(prof&&prof.nom)+'"><input id="pt" placeholder="Téléphone" value="'+esc(prof&&prof.telephone)+'"><button class="wide" onclick="saveProf()">Enregistrer</button></div>'+
   '<div class="box"><h3>Mes zones de livraison</h3><p>Tu ne reçois que les offres de ces communes. Aucune zone choisie = toutes les offres.</p><div class="chips">'+COMM.map(function(c){return '<button class="chip'+(z.indexOf(c)>-1?" on":"")+'" onclick="tz(\''+c+'\')">'+c+'</button>'}).join("")+'</div></div>'+
-  '<div class="box"><h3>🔔 Notifications</h3><p>Reçois une alerte avec son à chaque nouvelle offre, même quand l’appli est fermée.</p><button class="wide org" onclick="activerPush()">Activer les notifications</button><p style="margin-top:8px">État : '+(("Notification" in window)?({granted:"activées ✅",denied:"refusées (autorise-les dans les réglages du téléphone)",default:"pas encore activées"})[Notification.permission]:"non disponibles")+'</p></div>'+'<div class="box"><h3>Changer mon mot de passe</h3><input id="np" type="password" placeholder="Nouveau mot de passe (6 caractères minimum)"><button class="wide" onclick="chgPwd()">Changer</button></div>'+'<div class="box"><h3>Installer l’application</h3><p>Ajoute LIVREUR 24/24 sur ton écran d’accueil, comme une vraie appli.</p>'+(DIP?'<button class="wide org" onclick="DIP.prompt()">📲 Installer</button>':'<p>Dans Chrome : menu ⋮, puis « Installer l’application » ou « Ajouter à l’écran d’accueil ».</p>')+'</div>'+
+  '<div class="box"><h3>🔔 Notifications</h3><p>Reçois une alerte avec son à chaque nouvelle offre, même quand l’appli est fermée.</p><button class="wide org" onclick="activerPush()">Activer les notifications</button><p style="margin-top:8px">État : '+(("Notification" in window)?({granted:"activées ✅",denied:"refusées (autorise-les dans les réglages du téléphone)",default:"pas encore activées"})[Notification.permission]:"non disponibles")+' · Appareil enregistré : '+(PUSHN>0?"oui ✅":"non")+'</p><button class="wide gh" onclick="testNotif()">🔔 Tester l’affichage</button></div>'+'<div class="box"><h3>Changer mon mot de passe</h3><input id="np" type="password" placeholder="Nouveau mot de passe (6 caractères minimum)"><button class="wide" onclick="chgPwd()">Changer</button></div>'+'<div class="box"><h3>Installer l’application</h3><p>Ajoute LIVREUR 24/24 sur ton écran d’accueil, comme une vraie appli.</p>'+(DIP?'<button class="wide org" onclick="DIP.prompt()">📲 Installer</button>':'<p>Dans Chrome : menu ⋮, puis « Installer l’application » ou « Ajouter à l’écran d’accueil ».</p>')+'</div>'+
   '<div class="box"><h3>Voix</h3><button class="wide gh" onclick="speak(\'Test de la voix. Cocody vers Bingerville, mille cinq cents francs.\')">🔊 Tester la voix</button></div>'+
   aboutBox()+'<div style="padding:0 16px"><button class="wide gh" onclick="sb.auth.signOut().then(function(){tab=\'offres\';start()})">Se déconnecter</button></div>';
 }
@@ -292,7 +293,10 @@ async function publier(){
   var g=function(i){return $(i).value.trim()},p=parseInt(g("a3"),10);
   if(!g("a1")||!g("a2")||!p){alert("Remplis le départ, l’arrivée et le prix.");return}
   var r=await sb.from("offres").insert({depart:g("a1"),arrivee:g("a2"),prix:p,telephone_client:g("a4")}).select("id").single();if(bad(r))return;
-  sb.functions.invoke("clever-handler",{body:{offre_id:r.data.id}}).then(function(f){toast(f.error?"Offre publiée, mais notification non envoyée":"Offre publiée · "+((f.data&&f.data.envoyes)||0)+" notification(s) envoyée(s)")});
+  sb.functions.invoke("clever-handler",{body:{offre_id:r.data.id}}).then(async function(f){
+    if(f.error){var m=f.error.message;try{var j=await f.error.context.json();m=j.error||JSON.stringify(j)}catch(x){}toast("Offre publiée. Notification non envoyée : "+m,9000)}
+    else{var d=f.data||{};toast("Offre publiée · "+(d.cibles||0)+" appareil(s) ciblé(s), "+(d.envoyes||0)+" envoyé(s), "+(d.echecs||0)+" échec(s)",9000)}
+  });
   ["a1","a2","a3","a4","fbtxt"].forEach(function(i){$(i).value=""});await loadOffres();render();
 }
 async function bascule(id,s){var r=await sb.from("offres").update({statut:s}).eq("id",id);if(bad(r))return;await loadOffres();render()}
@@ -310,4 +314,19 @@ async function sauver(){
 sb.auth.onAuthStateChange(function(e){if(e==="SIGNED_OUT"){try{sessionStorage.removeItem("adm")}catch(x){}me=null;prof=null;render()}});
 if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js").catch(function(){});
 start();
+</script>
+<script>
+(function(){
+  var U=["https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js","https://unpkg.com/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"],i=0;
+  function show(t){var e=document.getElementById("main");if(e&&!e.getAttribute("data-ok"))e.innerHTML='<div style="padding:24px;font-family:system-ui,sans-serif"><h3 style="margin-bottom:8px">Oups, un problème est survenu</h3><p style="color:#B91C1C;font-size:13px;word-break:break-word">'+String(t).replace(/</g,"&lt;")+'</p><button onclick="location.reload()" style="margin-top:14px;padding:12px 18px;border:0;border-radius:12px;background:#0B6B3A;color:#fff;font-weight:700">Réessayer</button></div>'}
+  window.onerror=function(m){show(m)};
+  window.addEventListener("unhandledrejection",function(e){show((e.reason&&e.reason.message)||e.reason)});
+  function run(){try{var s=document.createElement("script");s.textContent=document.getElementById("app-code").textContent;document.body.appendChild(s)}catch(e){show(e.message)}}
+  function load(){
+    if(window.supabase){run();return}
+    if(i>=U.length){show("Impossible de charger les composants de l’appli. Vérifie ta connexion Internet, puis réessaie.");return}
+    var s=document.createElement("script");s.src=U[i++];s.onload=function(){window.supabase?run():load()};s.onerror=load;document.head.appendChild(s)
+  }
+  load();
+})();
 </script></body></html>
